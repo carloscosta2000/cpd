@@ -1,0 +1,6 @@
+Assume that are allways 2 roads for each city.
+If even the tour is completed last city visited, if doest not have a road to city 0 this tour is discarded.
+cmp should compare lower bounds and the indexes if the lb is the same.
+The code will be compiled in gcc with 03 as optimization: https://gcc.gnu.org/onlinedocs/gcc-11.1.0/gcc/Optimize-Options.html
+
+
