@@ -117,14 +117,17 @@ void print_queue_node(FILE *fp, void *data) {
 char cmp(void* queue_element_1, void* queue_element_2){
     queue_element *e1 = (queue_element*) queue_element_1;
     queue_element *e2 = (queue_element*) queue_element_2;
-    if(e1 ->lb < e2 -> lb){
+    if(e1 ->lb < e2 -> lb)
         return 0;
-    }
+    else
+        if(e1 ->lb == e2 -> lb && e1 -> city < e2 -> city)
+            return 0;
     return 1;
 }
 
 bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
-    int *tour = malloc((n+1)* sizeof(int));
+    //int *tour = malloc((n+1)* sizeof(int));
+    int* tour[n+1];
     tour[0] = 0;
     for(int i = 1; i < n+1; i++)
         tour[i] = -1;
@@ -134,11 +137,70 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
     priority_queue_t *queue = queue_create(cmp);
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     queue_print(queue, fopen("output.txt", "w"), print_queue_node);
-    // while(queue -> size != 0){
-    //     queue_element *node = (queue_element*) queue_pop(queue);
-    //     //if(node -> lb >= bestTourCost)
-    //         //bestTourPairCreate(bestTour, bestTourCost);
-    // }
-    return NULL;
-    //return bestTourPairCreate(n+1, 0);
+    int *bestTour = malloc((n+1)* sizeof(int));
+    insertbestTour(bestTour, tour, n+1);
+    while(queue -> size != 0){
+        queue_element *node = (queue_element*) queue_pop(queue);
+        if(node -> lb >= bestTourCost)
+            bestTourPairCreate(bestTour, bestTourCost);
+        if(node -> length == n){
+            if(node -> cost + distances[node -> city][0] < bestTourCost){
+                insertTour(tour, 0, n+1);
+                insertbestTour(bestTour, tour, n+1);
+                bestTourCost = node -> cost + distances[node -> city][0];
+            }
+        }else{
+            for(int i = 0; i < n; i++){
+                if(distances[node->city][i] != 0 && checkInTour(tour, i, n+1)){
+                    double newLb = calculateNewLB(distances, node, i, n);
+                }
+            }
+        }
+    }
+    return bestTourPairCreate(bestTour, bestTourCost);
+}
+
+int* insertTour(int (*tour), int city, int length){
+    for(int i = 0; i < length; i++){
+        if(tour[i] == -1){
+            tour[i] = city;
+            return tour;
+        }
+    }
+    return tour;
+}
+
+int* insertbestTour(int (*bestTour), int (*tour), int length){
+    for(int i = 0; i < length; i++)
+        bestTour[i] = tour[i];
+}
+
+int checkInTour(int (*tour), int city, int length){
+    for(int i = 0; i < length; i++){
+        if(tour[i] == city){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+double calculateNewLB(int(** distances),queue_element* city_from, int city_to, int length){
+    double newLb = 0.0;
+    int distance = distances[city_from->city][city_to];
+    newLb = city_from -> lb + distance;
+    int smallests[2];
+    findTwoSmallest(distances[city_from->city], length, smallests);
+    int min_f = 0;
+    if(distance>= smallests[1])
+        min_f = smallests[1];
+    else
+        min_f = smallests[0];
+    findTwoSmallest(distances[city_to], length, smallests);
+    int min_t = 0;
+    if(distance>= smallests[1])
+        min_t = smallests[1];
+    else
+        min_t = smallests[0];
+    newLb -= ((double) min_f + (double) min_t) / 2;
+    return newLb;
 }

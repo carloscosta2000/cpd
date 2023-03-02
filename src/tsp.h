@@ -24,8 +24,16 @@ bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
 bestTourPair *TSPBB(int(** distances), int n, double bestTourCost);
 
-double calculateLB(int(** distances), int n);
+double calculateLB(int ** distances, int n);
 
 void findTwoSmallest(int *edges, int n, int *smallests);
+
+int* insertTour(int (*tour), int city, int length);
+
+int* insertbestTour(int (*bestTour), int (*tour), int length);
+
+int checkInTour(int (*tour), int city, int length);
+
+double calculateNewLB(int(** distances),queue_element* city_from, int city_to, int length);
 
 #endif
