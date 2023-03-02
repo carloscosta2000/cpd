@@ -9,6 +9,9 @@ SRC_DIR = src
 OBJ_DIR = obj
 QUEUE_DIR = nqueue
 
+# Create the obj directory
+$(shell mkdir -p $(OBJ_DIR))
+
 # Define the source files to compile
 SRCS = $(SRC_DIR)/tsp.c $(QUEUE_DIR)/queue.c
 

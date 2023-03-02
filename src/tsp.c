@@ -15,9 +15,9 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     
     //reads first line
-    if((read = getline(&n_edges, &len, fp)) != -1){
+    if((read = getline(&n_edges, &len, fp)) != -1)
         printf("Num Cities and Edges: %s", n_edges);
-    }
+    
     int n;
     sscanf(strtok(n_edges, " "), "%d", &n); 
     if (n_edges)
@@ -46,13 +46,17 @@ int main(int argc, char *argv[]) {
         free(line);
 
     for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++){
+        for(int j = 0; j < n; j++)
             printf("%d ", distances[i][j]);
-        }
         printf("\n");
     }
-    
-    TSPBB(distances, n, 300.0); 
+
+    double bestTourCost = atof(argv[2]);
+    bestTourPair *pair = TSPBB(distances, n, bestTourCost);
+    printf("BestTour: ");
+    for(int i = 0; i < n+1; i++)
+        printf("%d ", pair -> bestTour[i]);
+    printf("\nBestTourCost: %.2f\n", pair->bestTourCost);
 }
 
 queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city){
@@ -108,8 +112,8 @@ void print_queue_node(FILE *fp, void *data) {
         fprintf(fp, "%d ", node->tour[i]);
     }
     fprintf(fp, "\n");
-    fprintf(fp, "Cost: %f\n", node->cost);
-    fprintf(fp, "Lower Bound: %f\n", node->lb);
+    fprintf(fp, "Cost: %.2f\n", node->cost);
+    fprintf(fp, "Lower Bound: %.2f\n", node->lb);
     fprintf(fp, "Length: %d\n", node->length);
     fprintf(fp, "City: %d\n", node->city);
 }
@@ -126,33 +130,37 @@ char cmp(void* queue_element_1, void* queue_element_2){
 }
 
 bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
-    //int *tour = malloc((n+1)* sizeof(int));
-    int* tour[n+1];
+    int *tour = malloc((n+1)* sizeof(int));
     tour[0] = 0;
     for(int i = 1; i < n+1; i++)
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
-    printf("LB: %f\n", lb);
     priority_queue_t *queue = queue_create(cmp);
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
-    queue_print(queue, fopen("output.txt", "w"), print_queue_node);
-    int *bestTour = malloc((n+1)* sizeof(int));
-    insertbestTour(bestTour, tour, n+1);
+    int* bestTour = malloc((n+1)* sizeof(int));
+    updateTour(bestTour, tour, n+1);
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
         if(node -> lb >= bestTourCost)
-            bestTourPairCreate(bestTour, bestTourCost);
+            return bestTourPairCreate(bestTour, bestTourCost);
         if(node -> length == n){
             if(node -> cost + distances[node -> city][0] < bestTourCost){
-                insertTour(tour, 0, n+1);
-                insertbestTour(bestTour, tour, n+1);
+                insertTour(node->tour, 0, n+1);
+                updateTour(bestTour, node->tour, n+1);
                 bestTourCost = node -> cost + distances[node -> city][0];
             }
         }else{
-            for(int i = 0; i < n; i++){
-                if(distances[node->city][i] != 0 && checkInTour(tour, i, n+1)){
-                    double newLb = calculateNewLB(distances, node, i, n);
+            for(int v = 0; v < n; v++){
+                if(distances[node->city][v] != 0 && checkInTour(node->tour, v, n+1) == 0){
+                    double newLb = calculateNewLB(distances, node, v, n);
+                    if(newLb > bestTourCost)
+                        continue;
+                    int* newTour = malloc((n+1)* sizeof(int));
+                    updateTour(newTour, node->tour, n+1);
+                    insertTour(newTour, v, n+1);
+                    double newCost = distances[node->city][v] + node -> cost;
+                    queue_push(queue, queueElementCreate(newTour, newCost, newLb, node->length+1, v));
                 }
             }
         }
@@ -160,27 +168,24 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
     return bestTourPairCreate(bestTour, bestTourCost);
 }
 
-int* insertTour(int (*tour), int city, int length){
-    for(int i = 0; i < length; i++){
+void insertTour(int (*tour), int city, int length){
+    for(int i = 0; i < length; i++)
         if(tour[i] == -1){
             tour[i] = city;
-            return tour;
+            break; 
         }
-    }
-    return tour;
 }
 
-int* insertbestTour(int (*bestTour), int (*tour), int length){
+void* updateTour(int (*newTour), int (*tour), int length){
     for(int i = 0; i < length; i++)
-        bestTour[i] = tour[i];
+        newTour[i] = tour[i];
+    return newTour;
 }
 
 int checkInTour(int (*tour), int city, int length){
-    for(int i = 0; i < length; i++){
-        if(tour[i] == city){
+    for(int i = 0; i < length; i++)
+        if(tour[i] == city)
             return 1;
-        }
-    }
     return 0;
 }
 

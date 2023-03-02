@@ -28,9 +28,9 @@ double calculateLB(int ** distances, int n);
 
 void findTwoSmallest(int *edges, int n, int *smallests);
 
-int* insertTour(int (*tour), int city, int length);
+void insertTour(int (*tour), int city, int length);
 
-int* insertbestTour(int (*bestTour), int (*tour), int length);
+void* updateTour(int (*newTour), int (*tour), int length);
 
 int checkInTour(int (*tour), int city, int length);
 
