@@ -37,4 +37,4 @@ clean:
 	rm -f $(OBJ_DIR)/*.o $(TARGET)
 
 run: $(TARGET)
-	./$(TARGET) ex2.in
+	./$(TARGET) ex2.in 40

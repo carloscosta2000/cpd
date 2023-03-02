@@ -9,6 +9,7 @@ int main(int argc, char *argv[]) {
     size_t len = 0;
     ssize_t read;
     char * n_edges = NULL;
+    int n;
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -16,9 +17,8 @@ int main(int argc, char *argv[]) {
     
     //reads first line
     if((read = getline(&n_edges, &len, fp)) != -1)
-        printf("Num Cities and Edges: %s", n_edges);
+        printf("Olá");
     
-    int n;
     sscanf(strtok(n_edges, " "), "%d", &n); 
     if (n_edges)
         free(n_edges);
@@ -41,22 +41,20 @@ int main(int argc, char *argv[]) {
         distances[second_city][first_city] = edge;   
     }
     fclose(fp);
-    
     if (line)
         free(line);
 
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++)
-            printf("%d ", distances[i][j]);
-        printf("\n");
-    }
-
     double bestTourCost = atof(argv[2]);
     bestTourPair *pair = TSPBB(distances, n, bestTourCost);
-    printf("BestTour: ");
-    for(int i = 0; i < n+1; i++)
-        printf("%d ", pair -> bestTour[i]);
-    printf("\nBestTourCost: %.2f\n", pair->bestTourCost);
+    if(pair -> bestTourCost == -1.0)
+        printf("NO SOLUTION\n");
+    else{
+        printf("BestTour: ");
+        for(int i = 0; i < n+1; i++)
+            printf("%d ", pair -> bestTour[i]);
+        printf("\nBestTourCost: %.2f\n", pair->bestTourCost);  
+    }
+    
 }
 
 queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city){
@@ -136,6 +134,8 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
+    if(lb > bestTourCost)
+        return bestTourPairCreate(tour, -1.0);
     priority_queue_t *queue = queue_create(cmp);
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     int* bestTour = malloc((n+1)* sizeof(int));
