@@ -4,14 +4,16 @@
 #define SWAP(x, y) void* tmp = x; x = y; y = tmp;
 
 // Return the index of the parent node
-static size_t parent_of(size_t i){
+static size_t parent_of(size_t i)
+{
 	return (i - 1) / 2;
 }
 
 // Bubble-down the element to the correct position
 // (i.e., compare it to its child and then swap them if necessary).
 // Assume that all the elements in the subtree is already sorted.
-void bubble_down(priority_queue_t *queue, size_t node){
+void bubble_down(priority_queue_t *queue, size_t node)
+{
 	size_t left_child = 2 * node + 1;
 	size_t right_child = 2 * node + 2;
 	size_t i = node;
@@ -38,7 +40,8 @@ void bubble_down(priority_queue_t *queue, size_t node){
 }
 
 // Create a new priority queue
-priority_queue_t *queue_create(char (*cmp)(void *, void *)){
+priority_queue_t *queue_create(char (*cmp)(void *, void *))
+{
 	priority_queue_t *queue;
 
 	queue = malloc(sizeof(priority_queue_t));
@@ -52,25 +55,31 @@ priority_queue_t *queue_create(char (*cmp)(void *, void *)){
 }
 
 // Delete the priority queue
-void queue_delete(priority_queue_t *queue){
+void queue_delete(priority_queue_t *queue)
+{
 	queue->size = -1;
 	queue->max_size = -1;
 	free(queue->buffer);
 }
 
 // Insert a new element in the queue and then sort its contents.
-void queue_push(priority_queue_t *queue, void* new_element){
+void queue_push(priority_queue_t *queue, void* new_element)
+{
 	// Reallocate buffer if necessary
-	if (queue->size + 1 > queue->max_size){
+	if (queue->size + 1 > queue->max_size)
+	{
 		queue->max_size += REALLOC_SIZE;
 		queue->buffer = realloc(queue->buffer, queue->max_size * sizeof(void*));
 	}
+	
 	// Insert the new_element at the end of the buffer
 	size_t node = queue->size;
 	queue->buffer[queue->size++] = new_element;
+
 	// Bubble-up the new element to the correct position
 	// (i.e., compare it to the parent and then swap them if necessary)
-	while (node > 0 && queue->cmpfn(queue->buffer[parent_of(node)], queue->buffer[node])){
+	while (node > 0 && queue->cmpfn(queue->buffer[parent_of(node)], queue->buffer[node]))
+	{
 		size_t parent = parent_of(node);
 		SWAP(queue->buffer[node], queue->buffer[parent])
 		node = parent;
@@ -123,4 +132,7 @@ void queue_print(priority_queue_t* queue, FILE *fp,
 		void* node = queue_pop(queue_copy);
 		print_node(fp, node);
 	}
+
+	queue_delete(queue_copy);
+	free(queue_copy);
 }

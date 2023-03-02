@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "nqueue/nqueue/queue.h"
+#include "../nqueue/queue.h"
 #include <sys/types.h>
 #include "tsp.h"
 
@@ -41,8 +41,10 @@ int main(int argc, char *argv[]) {
         distances[second_city][first_city] = edge;   
     }
     fclose(fp);
+    
     if (line)
         free(line);
+
     for(int i = 0; i < n; i++){
         for(int j = 0; j < n; j++){
             printf("%d ", distances[i][j]);
@@ -132,10 +134,11 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
     priority_queue_t *queue = queue_create(cmp);
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     queue_print(queue, fopen("output.txt", "w"), print_queue_node);
-    while(queue -> size != 0){
-        queue_element *node = (queue_element*) queue_pop(queue);
-        if(node -> lb >= bestTourCost)
-            bestTourPairCreate(bestTour, bestTourCost);
-    }
-    return bestTourPairCreate(n+1);
+    // while(queue -> size != 0){
+    //     queue_element *node = (queue_element*) queue_pop(queue);
+    //     //if(node -> lb >= bestTourCost)
+    //         //bestTourPairCreate(bestTour, bestTourCost);
+    // }
+    return NULL;
+    //return bestTourPairCreate(n+1, 0);
 }

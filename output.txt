@@ -1,0 +1,5 @@
+Tour: 0 
+Cost: 0.000000
+Lower Bound: 18.000000
+Length: 1
+City: 0
