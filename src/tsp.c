@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     
     //reads first line
     if((read = getline(&n_edges, &len, fp)) != -1)
-        printf("Olá");
+        printf("OLA");
     
     sscanf(strtok(n_edges, " "), "%d", &n); 
     if (n_edges)
@@ -134,8 +134,10 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
-    if(lb > bestTourCost)
+    if(lb > bestTourCost){
+        printf("YURR\n");
         return bestTourPairCreate(tour, -1.0);
+    }
     priority_queue_t *queue = queue_create(cmp);
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     int* bestTour = malloc((n+1)* sizeof(int));
@@ -161,10 +163,14 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
                     insertTour(newTour, v, n+1);
                     double newCost = distances[node->city][v] + node -> cost;
                     queue_push(queue, queueElementCreate(newTour, newCost, newLb, node->length+1, v));
+                    //free(newTour);
                 }
             }
         }
     }
+    free(bestTour);
+    free(tour);
+    free(distances);
     return bestTourPairCreate(bestTour, bestTourCost);
 }
 
