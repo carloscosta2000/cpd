@@ -22,11 +22,11 @@ queue_element *queueElementCreate(int(* tour), double cost, double lb, int lengt
 bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
 
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
-bestTourPair *TSPBB(int(** distances), int n, double bestTourCost);
+bestTourPair *TSPBB(double(** distances), int n, double bestTourCost);
 
-double calculateLB(int ** distances, int n);
+double calculateLB(double ** distances, int n);
 
-void findTwoSmallest(int *edges, int n, int *smallests);
+void findTwoSmallest(double *edges, int n, double *smallests);
 
 void insertTour(int (*tour), int city, int length);
 
@@ -34,6 +34,8 @@ void* updateTour(int (*newTour), int (*tour), int length);
 
 int checkInTour(int (*tour), int city, int length);
 
-double calculateNewLB(int(** distances),queue_element* city_from, int city_to, int length);
+double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length);
+
+void print_matrix(double** distances, int n);
 
 #endif

@@ -11,6 +11,7 @@ int main(int argc, char *argv[]) {
     char * n_edges = NULL;
     int n;
 
+
     fp = fopen(argv[1], "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
@@ -22,9 +23,9 @@ int main(int argc, char *argv[]) {
     sscanf(strtok(n_edges, " "), "%d", &n); 
     if (n_edges)
         free(n_edges);
-    int** distances = (int **) malloc(sizeof(int) *n);
+    double** distances = (double **) malloc(sizeof(double) *n);
     for(int i = 0; i < n; i++) 
-        distances[i] = (int *)malloc(n * sizeof(int));
+        distances[i] = (double *)malloc(n * sizeof(double));
     
     for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++)
@@ -35,11 +36,14 @@ int main(int argc, char *argv[]) {
         sscanf(strtok(line, " "), "%d", &first_city);
         int second_city;
         sscanf(strtok(NULL, " "), "%d", &second_city);
-        int edge;
-        sscanf(strtok(NULL, " "), "%d", &edge);
+        double edge;
+        sscanf(strtok(NULL, " "), "%lf", &edge);
         distances[first_city][second_city] = edge;
         distances[second_city][first_city] = edge;   
     }
+
+    print_matrix(distances, n);
+    
     fclose(fp);
     if (line)
         free(line);
@@ -76,7 +80,7 @@ bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
     return btPair;
 }
 
-void findTwoSmallest(int *edges, int n, int *smallests){
+void findTwoSmallest(double *edges, int n, double *smallests){
     int min1 = 0, min2 = 0;
     for(int i = 0; i < n; i++){
         if(edges[i] != 0){
@@ -93,9 +97,9 @@ void findTwoSmallest(int *edges, int n, int *smallests){
     smallests[1] = min2;
 }
 
-double calculateLB(int **distances, int n){
+double calculateLB(double **distances, int n){
     double lb = 0.0;
-    int smallests[2];
+    double smallests[2];
     for(int i = 0; i < n; i++){
         findTwoSmallest(distances[i], n, smallests);
         lb += (smallests[0] + smallests[1]);
@@ -119,23 +123,29 @@ void print_queue_node(FILE *fp, void *data) {
 char cmp(void* queue_element_1, void* queue_element_2){
     queue_element *e1 = (queue_element*) queue_element_1;
     queue_element *e2 = (queue_element*) queue_element_2;
+    printf("%d ", e1 -> city);
+    printf("%lf\n", e1 ->lb);
+    printf("%d ", e2 -> city);
+    printf("%lf\n", e2 ->lb);
     if(e1 ->lb < e2 -> lb)
         return 0;
-    else
+    else {
         if(e1 ->lb == e2 -> lb && e1 -> city < e2 -> city)
             return 0;
+    }
     return 1;
+
 }
 
-bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
+bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     int *tour = malloc((n+1)* sizeof(int));
     tour[0] = 0;
     for(int i = 1; i < n+1; i++)
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
+    printf("%lf\n",lb);
     if(lb > bestTourCost){
-        printf("YURR\n");
         return bestTourPairCreate(tour, -1.0);
     }
     priority_queue_t *queue = queue_create(cmp);
@@ -174,6 +184,16 @@ bestTourPair *TSPBB(int(** distances), int n, double bestTourCost){
     return bestTourPairCreate(bestTour, bestTourCost);
 }
 
+void print_matrix(double** distances, int n) {
+    printf("\n");
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++)
+            printf("%lf ", distances[i][j]);
+        printf("\n");
+    }
+    printf("\n");
+}
+
 void insertTour(int (*tour), int city, int length){
     for(int i = 0; i < length; i++)
         if(tour[i] == -1){
@@ -195,23 +215,23 @@ int checkInTour(int (*tour), int city, int length){
     return 0;
 }
 
-double calculateNewLB(int(** distances),queue_element* city_from, int city_to, int length){
+double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
     double newLb = 0.0;
-    int distance = distances[city_from->city][city_to];
+    double distance = distances[city_from->city][city_to];
     newLb = city_from -> lb + distance;
-    int smallests[2];
+    double smallests[2];
     findTwoSmallest(distances[city_from->city], length, smallests);
-    int min_f = 0;
+    double min_f = 0;
     if(distance>= smallests[1])
         min_f = smallests[1];
     else
         min_f = smallests[0];
     findTwoSmallest(distances[city_to], length, smallests);
-    int min_t = 0;
+    double min_t = 0;
     if(distance>= smallests[1])
         min_t = smallests[1];
     else
         min_t = smallests[0];
-    newLb -= ((double) min_f + (double) min_t) / 2;
+    newLb -= (min_f + min_t) / 2;
     return newLb;
 }
