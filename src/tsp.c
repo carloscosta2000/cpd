@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     
     //reads first line
-    if((read = getline(&n_edges, &len, fp)) != -1)
-        printf("OLA");
+    if((read = getline(&n_edges, &len, fp)) == -1)
+        exit(EXIT_FAILURE);
     
     sscanf(strtok(n_edges, " "), "%d", &n); 
     if (n_edges)
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
         distances[second_city][first_city] = edge;   
     }
 
-    print_matrix(distances, n);
+    //print_matrix(distances, n);
     
     fclose(fp);
     if (line)
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
         printf("BestTour: ");
         for(int i = 0; i < n+1; i++)
             printf("%d ", pair -> bestTour[i]);
-        printf("\nBestTourCost: %.2f\n", pair->bestTourCost);  
+        printf("\nBestTourCost: %.1f\n", pair->bestTourCost);  
     }
     
 }
@@ -81,14 +81,14 @@ bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
 }
 
 void findTwoSmallest(double *edges, int n, double *smallests){
-    int min1 = 0, min2 = 0;
+    double min1 = 0.0, min2 = 0.0;
     for(int i = 0; i < n; i++){
         if(edges[i] != 0){
-            if(min1 == 0 || edges[i] < min1){
+            if(min1 == 0.0 || edges[i] < min1){
                 min2 = min1;
                 min1 = edges[i];
             }
-            else if(min2 == 0 || edges[i] < min2){
+            else if(min2 == 0.0 || edges[i] < min2){
                 min2 = edges[i];
             }
         }
@@ -123,16 +123,12 @@ void print_queue_node(FILE *fp, void *data) {
 char cmp(void* queue_element_1, void* queue_element_2){
     queue_element *e1 = (queue_element*) queue_element_1;
     queue_element *e2 = (queue_element*) queue_element_2;
-    printf("%d ", e1 -> city);
-    printf("%lf\n", e1 ->lb);
-    printf("%d ", e2 -> city);
-    printf("%lf\n", e2 ->lb);
     if(e1 ->lb < e2 -> lb)
         return 0;
-    else {
-        if(e1 ->lb == e2 -> lb && e1 -> city < e2 -> city)
-            return 0;
-    }
+    else
+        if(e1 ->lb == e2 -> lb)
+            if((e1 -> city == e2 -> city && e1 -> cost < e2 -> cost) || e1 -> city < e2 -> city)
+                return 0;
     return 1;
 
 }
