@@ -50,13 +50,14 @@ int main(int argc, char *argv[]) {
 
     double bestTourCost = atof(argv[2]);
     bestTourPair *pair = TSPBB(distances, n, bestTourCost);
+    //print solution
     if(pair -> bestTourCost == -1.0)
         printf("NO SOLUTION\n");
     else{
-        printf("BestTour: ");
+        printf("%.1f\n", pair->bestTourCost);  
         for(int i = 0; i < n+1; i++)
             printf("%d ", pair -> bestTour[i]);
-        printf("\nBestTourCost: %.1f\n", pair->bestTourCost);  
+        printf("\n");
     }
     
 }
@@ -140,7 +141,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
-    printf("%lf\n",lb);
     if(lb > bestTourCost){
         return bestTourPairCreate(tour, -1.0);
     }
