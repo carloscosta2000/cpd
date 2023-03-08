@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
         distances[second_city][first_city] = edge;   
     }
 
-    //print_matrix(distances, n);
+    print_matrix(distances, n);
     
     fclose(fp);
     if (line)
@@ -155,6 +155,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
+    printf("%lf\n", lb);
     if(lb > bestTourCost){
         return bestTourPairCreate(tour, -1.0);
     }
@@ -162,11 +163,23 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     int* bestTour = malloc((n+1)* sizeof(int));
     updateTour(bestTour, tour, n+1);
+    char ze = 0;
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
+        // if(node -> tour[node -> length -2] == 11) {
+        //     for (int i = 0; i < n; i++) {
+        //         printf("%d ", node -> tour[i]);
+        //     }
+        //     printf("\n%lf", node -> lb);
+        //     printf("\n");
+        //     if(scanf("%c", &ze) == 0) {
+        //         continue;
+        //     }
+
+        // }
         if(node -> lb >= bestTourCost)
             return bestTourPairCreate(bestTour, bestTourCost);
-        if(node -> length == n){
+        if(node -> length == n && distances[node -> city][0] != 0){
             if(node -> cost + distances[node -> city][0] < bestTourCost){
                 insertTour(node->tour, 0, n+1);
                 updateTour(bestTour, node->tour, n+1);
@@ -187,6 +200,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                 }
             }
         }
+
     }
     free(bestTour);
     free(tour);
@@ -198,7 +212,7 @@ void print_matrix(double** distances, int n) {
     printf("\n");
     for(int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++)
-            printf("%lf ", distances[i][j]);
+            printf("%.1lf ", distances[i][j]);
         printf("\n");
     }
     printf("\n");
@@ -228,7 +242,7 @@ int checkInTour(int (*tour), int city, int length){
 double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
     double newLb = 0.0;
     double distance = distances[city_from->city][city_to];
-    newLb = city_from -> lb + distance;
+    newLb = (city_from -> lb) + distance;
     double smallests[2];
     findTwoSmallest(distances[city_from->city], length, smallests);
     double min_f = 0;
@@ -242,6 +256,6 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
         min_t = smallests[1];
     else
         min_t = smallests[0];
-    newLb -= (min_f + min_t) / 2;
+    newLb -= ((min_f + min_t) / 2);
     return newLb;
 }
