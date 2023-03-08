@@ -19,7 +19,7 @@ typedef struct queue_element {
 queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city);
 
 //Create and initialize the BestTourPair
-bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
+bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost, int length);
 
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost);

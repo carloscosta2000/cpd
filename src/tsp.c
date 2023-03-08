@@ -63,24 +63,42 @@ int main(int argc, char *argv[]) {
             printf("%d ", pair -> bestTour[i]);
         printf("\n");
     }
-    
+    for (int i = 0; i < n; i++) {
+        free(distances[i]);
+    }
+    free(distances);
+    free(pair->bestTour);
+    free(pair);
+    return 0;
 }
 
-queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city){
-    queue_element *newElement;
-    newElement = malloc(sizeof(queue_element));
-    newElement -> tour = tour;
-    newElement -> cost = cost;
-    newElement -> lb = lb;
-    newElement -> length = length;
-    newElement -> city = city; 
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city) {
+    queue_element *newElement = malloc(sizeof(queue_element));
+    if (newElement == NULL) {
+        fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
+        exit(EXIT_FAILURE);
+    }
+    newElement->tour = malloc(length * sizeof(int));
+    if (newElement->tour == NULL) {
+        fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
+        free(newElement);
+        exit(EXIT_FAILURE);
+    }
+    newElement->tour = tour;
+    newElement->cost = cost;
+    newElement->lb = lb;
+    newElement->length = length;
+    newElement->city = city;
     return newElement;
 }
 
-bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
-    bestTourPair *btPair;
-    btPair = malloc(sizeof(bestTourPair));
-    btPair -> bestTour = bestTour;
+void queue_element_delete(queue_element *e){
+    free(e);
+}
+
+bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost, int length){
+    bestTourPair *btPair = malloc(sizeof(bestTourPair));
+    btPair->bestTour = bestTour;
     btPair -> bestTourCost = bestTourCost;
     return btPair;
 }
@@ -125,19 +143,6 @@ void print_queue_node(FILE *fp, void *data) {
     fprintf(fp, "City: %d\n", node->city);
 }
 
-/*char cmp(void* queue_element_1, void* queue_element_2){
-    queue_element *e1 = (queue_element*) queue_element_1;
-    queue_element *e2 = (queue_element*) queue_element_2;
-    if(e1 ->lb < e2 -> lb)
-        return 0;
-    else
-        if(e1 ->lb == e2 -> lb)
-            if((e1 -> city == e2 -> city && e1 -> cost < e2 -> cost) || e1 -> city < e2 -> city)
-                return 0;
-    return 1;
-
-}*/
-
 char cmp(void* queue_element_1, void* queue_element_2) {
     queue_element *e1 = (queue_element*) queue_element_1;
     queue_element *e2 = (queue_element*) queue_element_2;
@@ -159,30 +164,25 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
-    //printf("%lf\n", lb);
     if(lb > bestTourCost){
-        return bestTourPairCreate(tour, -1.0);
+        free(tour);
+        return bestTourPairCreate(tour, -1.0, n+1);
     }
     priority_queue_t *queue = queue_create(cmp);
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     int* bestTour = malloc((n+1)* sizeof(int));
     updateTour(bestTour, tour, n+1);
-    //char ze = 0;
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
-        // if(node -> tour[node -> length -2] == 11) {
-        //     for (int i = 0; i < n; i++) {
-        //         printf("%d ", node -> tour[i]);
-        //     }
-        //     printf("\n%lf", node -> lb);
-        //     printf("\n");
-        //     if(scanf("%c", &ze) == 0) {
-        //         continue;
-        //     }
-
-        // }
-        if(node -> lb >= bestTourCost)
-            return bestTourPairCreate(bestTour, bestTourCost);
+        if(node -> lb >= bestTourCost){
+            free(tour);
+            queue_element_delete(node);
+            while (queue -> size != 0) {
+                queue_element_delete(queue_pop(queue));
+            }
+            queue_delete(queue);
+            return bestTourPairCreate(bestTour, bestTourCost, n+1);
+        }  
         if(node -> length == n && distances[node -> city][0] != 0){
             if(node -> cost + distances[node -> city][0] < bestTourCost){
                 insertTour(node->tour, 0, n+1);
@@ -200,16 +200,17 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                     insertTour(newTour, v, n+1);
                     double newCost = distances[node->city][v] + node -> cost;
                     queue_push(queue, queueElementCreate(newTour, newCost, newLb, node->length+1, v));
-                    //free(newTour);
                 }
             }
         }
-
+        queue_element_delete(node);
     }
-    free(bestTour);
     free(tour);
-    free(distances);
-    return bestTourPairCreate(bestTour, bestTourCost);
+    while (queue -> size != 0) {
+        queue_element_delete(queue_pop(queue));
+    }
+    queue_delete(queue);
+    return bestTourPairCreate(bestTour, bestTourCost, n+1);
 }
 
 void print_matrix(double** distances, int n) {
