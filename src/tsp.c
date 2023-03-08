@@ -121,7 +121,7 @@ void print_queue_node(FILE *fp, void *data) {
     fprintf(fp, "City: %d\n", node->city);
 }
 
-char cmp(void* queue_element_1, void* queue_element_2){
+/*char cmp(void* queue_element_1, void* queue_element_2){
     queue_element *e1 = (queue_element*) queue_element_1;
     queue_element *e2 = (queue_element*) queue_element_2;
     if(e1 ->lb < e2 -> lb)
@@ -132,6 +132,20 @@ char cmp(void* queue_element_1, void* queue_element_2){
                 return 0;
     return 1;
 
+}*/
+
+char cmp(void* queue_element_1, void* queue_element_2) {
+    queue_element *e1 = (queue_element*) queue_element_1;
+    queue_element *e2 = (queue_element*) queue_element_2;
+    if(e1 -> lb < e2 -> lb)
+        return 0;
+    else if (e1 -> lb > e2 -> lb) {
+        return 1;
+    } else if (e1 -> city > e2 -> city){
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
