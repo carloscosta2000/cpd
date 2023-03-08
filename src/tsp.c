@@ -155,7 +155,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         tour[i] = -1;
 
     double lb = calculateLB(distances, n);
-    printf("%lf\n", lb);
+    //printf("%lf\n", lb);
     if(lb > bestTourCost){
         return bestTourPairCreate(tour, -1.0);
     }
