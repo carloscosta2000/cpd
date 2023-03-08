@@ -11,53 +11,57 @@ int main(int argc, char *argv[]) {
     char * n_edges = NULL;
     int n;
 
-
-    fp = fopen(argv[1], "r");
-    if (fp == NULL)
-        exit(EXIT_FAILURE);
+    if (argc > 1) {
+        fp = fopen(argv[1], "r");
+        if (fp == NULL)
+            exit(EXIT_FAILURE);
     
-    //reads first line
-    if((read = getline(&n_edges, &len, fp)) == -1)
-        exit(EXIT_FAILURE);
     
-    sscanf(strtok(n_edges, " "), "%d", &n); 
-    if (n_edges)
-        free(n_edges);
-    double** distances = (double **) malloc(sizeof(double) *n);
-    for(int i = 0; i < n; i++) 
-        distances[i] = (double *)malloc(n * sizeof(double));
-    
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            distances[i][j] = 0;
+        //reads first line
+        if((read = getline(&n_edges, &len, fp)) == -1)
+            exit(EXIT_FAILURE);
+        
+        sscanf(strtok(n_edges, " "), "%d", &n); 
+        if (n_edges)
+            free(n_edges);
+        double** distances = (double **) malloc(sizeof(double) *n);
+        for(int i = 0; i < n; i++) 
+            distances[i] = (double *)malloc(n * sizeof(double));
+        
+        for(int i = 0; i < n; i++)
+            for(int j = 0; j < n; j++)
+                distances[i][j] = 0;
 
-    while ((read = getline(&line, &len, fp)) != -1) {
-        int first_city;
-        sscanf(strtok(line, " "), "%d", &first_city);
-        int second_city;
-        sscanf(strtok(NULL, " "), "%d", &second_city);
-        double edge;
-        sscanf(strtok(NULL, " "), "%lf", &edge);
-        distances[first_city][second_city] = edge;
-        distances[second_city][first_city] = edge;   
-    }
+        while ((read = getline(&line, &len, fp)) != -1) {
+            int first_city;
+            sscanf(strtok(line, " "), "%d", &first_city);
+            int second_city;
+            sscanf(strtok(NULL, " "), "%d", &second_city);
+            double edge;
+            sscanf(strtok(NULL, " "), "%lf", &edge);
+            distances[first_city][second_city] = edge;
+            distances[second_city][first_city] = edge;   
+        }
 
-    //print_matrix(distances, n);
-    
-    fclose(fp);
-    if (line)
-        free(line);
+        //print_matrix(distances, n);
+        
+        fclose(fp);
+        if (line)
+            free(line);
 
-    double bestTourCost = atof(argv[2]);
-    bestTourPair *pair = TSPBB(distances, n, bestTourCost);
-    //print solution
-    if(pair -> bestTourCost == -1.0)
-        printf("NO SOLUTION\n");
-    else{
-        printf("%.1f\n", pair->bestTourCost);  
-        for(int i = 0; i < n+1; i++)
-            printf("%d ", pair -> bestTour[i]);
-        printf("\n");
+        double bestTourCost = atof(argv[2]);
+        bestTourPair *pair = TSPBB(distances, n, bestTourCost);
+        //print solution
+        if(pair -> bestTourCost == -1.0)
+            printf("NO SOLUTION\n");
+        else{
+            printf("%.1f\n", pair->bestTourCost);  
+            for(int i = 0; i < n+1; i++)
+                printf("%d ", pair -> bestTour[i]);
+            printf("\n");
+        }
+    } else {
+        printf("Incorrect usage of program! Run: ./tsp <input_file> <lower_bound>\n");
     }
     
 }
@@ -142,6 +146,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
 
     double lb = calculateLB(distances, n);
     if(lb > bestTourCost){
+            free(tour);
+            free(distances);
         return bestTourPairCreate(tour, -1.0);
     }
     priority_queue_t *queue = queue_create(cmp);
@@ -150,8 +156,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     updateTour(bestTour, tour, n+1);
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
-        if(node -> lb >= bestTourCost)
+        if(node -> lb >= bestTourCost){
+            free(queue);
+            free(tour);
+            free(bestTour);
+            freeDistances(distances, n);
             return bestTourPairCreate(bestTour, bestTourCost);
+
+        }
         if(node -> length == n){
             if(node -> cost + distances[node -> city][0] < bestTourCost){
                 insertTour(node->tour, 0, n+1);
@@ -176,7 +188,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     }
     free(bestTour);
     free(tour);
-    free(distances);
+    freeDistances(distances, n);
+    free(queue);
     return bestTourPairCreate(bestTour, bestTourCost);
 }
 
@@ -230,4 +243,11 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
         min_t = smallests[0];
     newLb -= (min_f + min_t) / 2;
     return newLb;
+}
+
+void freeDistances(double **distances, int n) {
+    for (int i = 0; i < n; i++) {
+        free(distances[i]);
+    }
+    free(distances);
 }
