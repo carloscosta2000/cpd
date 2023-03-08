@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
         distances[second_city][first_city] = edge;   
     }
 
-    print_matrix(distances, n);
+    //print_matrix(distances, n);
     
     fclose(fp);
     if (line)
