@@ -163,7 +163,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     int* bestTour = malloc((n+1)* sizeof(int));
     updateTour(bestTour, tour, n+1);
-    char ze = 0;
+    //char ze = 0;
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
         // if(node -> tour[node -> length -2] == 11) {
