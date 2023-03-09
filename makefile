@@ -19,7 +19,7 @@ SRCS = $(SRC_DIR)/tsp.c $(QUEUE_DIR)/queue.c
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Define the target executable file
-TARGET = target/tsp
+TARGET = tsp
 
 # Define the rule to compile the source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -35,6 +35,7 @@ all: $(TARGET)
 # Define the rule to clean up object files and the target executable
 clean:
 	rm -f $(OBJ_DIR)/*.o $(TARGET)
+	rm -f $(TARGET)
 
 run: $(TARGET)
 	./$(TARGET) ex2.in 40
