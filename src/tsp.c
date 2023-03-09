@@ -172,6 +172,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
     int* bestTour = malloc((n+1)* sizeof(int));
     updateTour(bestTour, tour, n+1);
+    double newLb = 0.0;
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
         if(node -> lb >= bestTourCost){
@@ -181,6 +182,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                 queue_element_delete(queue_pop(queue));
             }
             queue_delete(queue);
+            free(queue);
             return bestTourPairCreate(bestTour, bestTourCost, n+1);
         }  
         if(node -> length == n && distances[node -> city][0] != 0){
@@ -192,9 +194,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         }else{
             for(int v = 0; v < n; v++){
                 if(distances[node->city][v] != 0 && checkInTour(node->tour, v, n+1) == 0){
-                    double newLb = calculateNewLB(distances, node, v, n);
-                    if(newLb > bestTourCost)
+                    newLb = calculateNewLB(distances, node, v, n);
+                    if(newLb > bestTourCost){
+                        queue_element_delete(node);
                         continue;
+                    }  
                     int* newTour = malloc((n+1)* sizeof(int));
                     updateTour(newTour, node->tour, n+1);
                     insertTour(newTour, v, n+1);
@@ -210,6 +214,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         queue_element_delete(queue_pop(queue));
     }
     queue_delete(queue);
+    free(queue);
     return bestTourPairCreate(bestTour, bestTourCost, n+1);
 }
 
