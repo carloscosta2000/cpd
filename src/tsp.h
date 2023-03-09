@@ -18,8 +18,10 @@ typedef struct queue_element {
 
 queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city);
 
+void bestTourPairDelete(bestTourPair *btPair);
+
 //Create and initialize the BestTourPair
-bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost, int length);
+bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
 
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost);
@@ -27,8 +29,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost);
 double calculateLB(double ** distances, int n);
 
 void findTwoSmallest(double *edges, int n, double *smallests);
-
-void insertTour(int (*tour), int city, int length);
 
 void* updateTour(int (*newTour), int (*tour), int length);
 
