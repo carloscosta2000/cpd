@@ -78,12 +78,12 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
         fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
         exit(EXIT_FAILURE);
     }
-    newElement->tour = malloc(length * sizeof(int));
-    if (newElement->tour == NULL) {
-        fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
-        free(newElement);
-        exit(EXIT_FAILURE);
-    }
+    //newElement->tour = malloc(length * sizeof(int));
+    // if (newElement->tour == NULL) {
+    //     fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
+    //     free(newElement);
+    //     exit(EXIT_FAILURE);
+    // }
     newElement->tour = tour;
     newElement->cost = cost;
     newElement->lb = lb;
