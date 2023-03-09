@@ -193,13 +193,13 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
             }
         }else{
             for(int v = 0; v < n; v++){
-                if(distances[node->city][v] != 0 && checkInTour(node->tour, v, n+1) == 0){
+                if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node ->length) == 0){
                     newLb = calculateNewLB(distances, node, v, n);
                     if(newLb > bestTourCost){
                         queue_element_delete(node);
                         continue;
                     }  
-                    int* newTour = malloc((n+1)* sizeof(int));
+                    int* newTour = malloc(node-> length * sizeof(int));
                     updateTour(newTour, node->tour, n+1);
                     insertTour(newTour, v, n+1);
                     double newCost = distances[node->city][v] + node -> cost;
