@@ -25,8 +25,7 @@ int main(int argc, char *argv[]) {
     double** distances = (double **) malloc(sizeof(double) *n);
     for(int i = 0; i < n; i++) 
         distances[i] = (double *)malloc(n * sizeof(double));
-
-    if (n_edges)
+    if(n_edges)
         free(n_edges);
     
     for(int i = 0; i < n; i++)
@@ -44,14 +43,13 @@ int main(int argc, char *argv[]) {
         distances[second_city][first_city] = edge;   
     }
 
-    //print_matrix(distances, n);
-    
-    if (line)
+    if(line)
         free(line);
     fclose(fp);
     
     double bestTourCost = atof(argv[2]);
     exec_time = -omp_get_wtime();
+    
     bestTourPair *pair = TSPBB(distances, n, bestTourCost);
     exec_time += omp_get_wtime();
     fprintf(stderr, "%.1fs\n", exec_time);
@@ -170,10 +168,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     tour[0] = 0;
     for(int i = 1; i < n+1; i++)
         tour[i] = -1;
-
+    
     double lb = calculateLB(distances, n);
     if(lb > bestTourCost){
-        free(tour);
         return bestTourPairCreate(tour, -1.0);
     }
     priority_queue_t *queue = queue_create(cmp);
@@ -181,6 +178,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     int* bestTour = malloc((n+1)* sizeof(int));
     updateTour(bestTour, tour, n+1);
     double newLb = 0.0;
+    
     while(queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(queue);
         if(node -> lb >= bestTourCost){
@@ -204,12 +202,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                 if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
                     newLb = calculateNewLB(distances, node, v, n);
                     if(newLb > bestTourCost){
-                        queue_element_delete(node);
                         continue;
                     }  
-                    // int* newTour = malloc((node-> length+1) * sizeof(int));
-                    // updateTour(newTour, node->tour, node -> length);
-                    // newTour[node->length] = v;
                     double newCost = distances[node->city][v] + node -> cost;
                     queue_push(queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v));
                 }
