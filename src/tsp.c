@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     ssize_t read;
     char * n_edges = NULL;
     int n;
-    double exec_time;
+    //double exec_time;
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -48,10 +48,10 @@ int main(int argc, char *argv[]) {
     fclose(fp);
     
     double bestTourCost = atof(argv[2]);
-    exec_time = -omp_get_wtime();
+    //exec_time = -omp_get_wtime();
     
     bestTourPair *pair = TSPBB(distances, n, bestTourCost);
-    exec_time += omp_get_wtime();
+    //exec_time += omp_get_wtime();
     //fprintf(stderr, "%.1fs\n", exec_time);
     //print solution
     if(pair -> bestTourCost == -1.0)
