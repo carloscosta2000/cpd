@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     
     bestTourPair *pair = TSPBB(distances, n, bestTourCost);
     exec_time += omp_get_wtime();
-    fprintf(stderr, "%.1fs\n", exec_time);
+    //fprintf(stderr, "%.1fs\n", exec_time);
     //print solution
     if(pair -> bestTourCost == -1.0)
         printf("NO SOLUTION\n");
