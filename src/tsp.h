@@ -38,6 +38,6 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
 
 void print_matrix(double** distances, int n);
 
-//void freeDistances(double **distances, int n);
+void freeDistances(double **distances, int n);
 
 #endif
