@@ -23,15 +23,19 @@ int main(int argc, char *argv[]) {
     sscanf(strtok(n_edges, " "), "%d", &n); 
 
     double** distances = (double **) malloc(sizeof(double) *n);
+    //TODO: pragma for aqui
     for(int i = 0; i < n; i++) 
+        //TODO: trocar para calloc
         distances[i] = (double *)malloc(n * sizeof(double));
     if(n_edges)
         free(n_edges);
     
+    //TODO: retirar quando tiver calloc
     for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++)
             distances[i][j] = 0;
 
+    //TODO: threads para ler um subset de linhas!
     while ((read = getline(&line, &len, fp)) != -1) {
         int first_city;
         sscanf(strtok(line, " "), "%d", &first_city);
@@ -129,6 +133,7 @@ void findTwoSmallest(double *edges, int n, double *smallests){
 double calculateLB(double **distances, int n){
     double lb = 0.0;
     double smallests[2];
+    //TODO: pode ser paralelo pragma for
     for(int i = 0; i < n; i++){
         findTwoSmallest(distances[i], n, smallests);
         lb += (smallests[0] + smallests[1]);
@@ -231,12 +236,14 @@ void print_matrix(double** distances, int n) {
 }
 
 void* updateTour(int (*newTour), int (*tour), int length){
+    //TODO: pragma for 
     for(int i = 0; i < length; i++)
         newTour[i] = tour[i];
     return newTour;
 }
 
 int checkInTour(int (*tour), int city, int length){
+    //TODO: pragma for 
     for(int i = 0; i < length; i++)
         if(tour[i] == city)
             return 1;
