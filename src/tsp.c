@@ -23,7 +23,9 @@ int main(int argc, char *argv[]) {
     sscanf(strtok(n_edges, " "), "%d", &n); 
 
     double** distances = (double **) malloc(sizeof(double) *n);
+    
     //TODO: pragma for aqui
+    #pragma omp for
     for(int i = 0; i < n; i++) 
         //TODO: trocar para calloc
         distances[i] = (double *)malloc(n * sizeof(double));
@@ -203,6 +205,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                 bestTourCost = node -> cost + distances[node -> city][0];
             }
         }else{
+            #pragma omp for
             for(int v = 0; v < n; v++){
                 if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
                     newLb = calculateNewLB(distances, node, v, n);
