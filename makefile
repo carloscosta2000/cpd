@@ -2,7 +2,7 @@
 CC = gcc
 
 # Define the compiler flags to use
-CFLAGS = -fopenmp -Wall -Werror -g -O3 -fopenmp
+CFLAGS = -fopenmp -Wall -g -O3 -fopenmp
 
 # Define the directories for source and object files
 SRC_DIR = src

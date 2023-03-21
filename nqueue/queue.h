@@ -16,6 +16,8 @@ typedef struct
         char (*cmpfn)(void *, void *);
 } priority_queue_t;
 
+priority_queue_t *queue_duplicate(priority_queue_t* queue);
+
 // Create a new priority queue
 priority_queue_t *queue_create(char (*)(void *, void *));
 

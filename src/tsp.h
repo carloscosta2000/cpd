@@ -16,9 +16,15 @@ typedef struct queue_element {
     int city;
 } queue_element;
 
+char cmp(void* queue_element_1, void* queue_element_2);
+
 queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city);
 
 void bestTourPairDelete(bestTourPair *btPair);
+
+void list_queues_delete(priority_queue_t** queues);
+
+void queue_element_delete(queue_element *e);
 
 //Create and initialize the BestTourPair
 bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
