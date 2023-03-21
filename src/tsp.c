@@ -14,7 +14,13 @@ int main(int argc, char *argv[]) {
     double exec_time;
     bestTourPair *bestTour;
     //export OMP_NUM_THREADS = 4
-    //int num_threads = omp_get_num_threads();
+
+    int num_threads = 0;
+    #pragma omp parallel 
+    {
+        num_threads = omp_get_num_threads();
+    }
+    printf("Threads: %d\n", num_threads);
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -52,7 +58,7 @@ int main(int argc, char *argv[]) {
     double bestTourCost = atof(argv[2]);
     exec_time = -omp_get_wtime();
     
-    bestTour = TSPBB(distances, n, bestTourCost);
+    bestTour = TSPBB(distances, n, bestTourCost, num_threads);
     exec_time += omp_get_wtime();
     fprintf(stderr, "%.1fs\n", exec_time);
     //print solution
@@ -160,7 +166,7 @@ void print_queue_node(FILE *fp, void *data) {
     fprintf(fp, "Cost: %.2f\n", node->cost);
     fprintf(fp, "Lower Bound: %.2f\n", node->lb);
     fprintf(fp, "Length: %d\n", node->length);
-    fprintf(fp, "City: %d\n", node->city);
+    fprintf(fp, "City: %d\n\n", node->city);
 }
 
 char cmp(void* queue_element_1, void* queue_element_2) {
@@ -177,114 +183,106 @@ char cmp(void* queue_element_1, void* queue_element_2) {
     }
 }
 
-bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
+bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_threads){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
     if(lb > bestTourCost){ //caso nao tenha solução
         return bestTourPairCreate(tour, -1.0);
     }
-
-    //priority_queue_t * master_queue = queue_create(cmp);
-    priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (omp_get_num_threads() - 1));
-    #pragma omp parallel
-    {
-        #pragma omp master
-        {
-            //Creates queues
-            for(int i = 0; i < omp_get_num_threads() - 1; i++){
-                list_queues[i] = queue_create(cmp);
-            }
-            //Adds 0's neighbours to workers queues.
-            queue_element* node_initial = queueElementCreate(tour, 0, lb, 1, 0);
-            for(int i = 0; i < n; i++){
-                if(distances[0][i] != 0){
-                    double newLb = calculateNewLB(distances, node_initial, i, n);
-                    if(newLb > bestTourCost){
-                        printf("sdada");
-                        continue;
-                    }
-                    double newCost = distances[node_initial->city][i] + node_initial->cost;      
-                    queue_push(list_queues[i % (omp_get_num_threads() - 1)], queueElementCreate(node_initial->tour, newCost, newLb, 2, i));
-                }
-            }
-
-            FILE * fp = fopen("out", "w");
-            for(int i = 0; i < omp_get_num_threads() - 1; i++){
-                printf("Queue %d: \n", i);
-                
-                priority_queue_t *queue_copy = queue_duplicate(list_queues[i]);
-                printf("Size: %ld\n", queue_copy -> size);
-                while (queue_copy->size > 0){
-                    void* node = queue_pop(queue_copy);
-                    print_queue_node(fp, node);
-                }
-
-                queue_delete(queue_copy);
-                free(queue_copy);
-            }
-        }
-
-        if(omp_get_thread_num() != 0){
-            //priority_queue_t *queue = list_queues[omp_get_thread_num() - 1];
-            //printf("Size: %ld\n", queue->size);
-             
-    
-            //int* bestTour = (int*) calloc((n+1), sizeof(int));
-            
-            //queue_element * current = (queue_element*) queue_pop(list_queues[omp_get_thread_num() - 1]);
-            //printf("Size: %ld\n", list_queues[0]->size);   
-            
-            //updateTour(bestTour, current->tour, current->length);
-            
-            //for(int i = 0; i < current->length; i++){
-            //    printf("Thread: %d -> %d\n", omp_get_thread_num(), bestTour[i]);
-            //}
-        }
-    
+    priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (num_threads));
+    //Creates queues
+    for(int i = 0; i < num_threads; i++){
+        list_queues[i] = queue_create(cmp);
     }
-
-    
-    
-
-    // while(queue -> size != 0){
-    //     queue_element *node = (queue_element*) queue_pop(queue);
-    //     if(node -> lb >= bestTourCost){
-    //         free(tour);
-    //         queue_element_delete(node);
-    //         while (queue -> size != 0) {
-    //             queue_element_delete(queue_pop(queue));
-    //         }
-    //         queue_delete(queue);
-    //         free(queue);
-    //         return bestTourPairCreate(bestTour, bestTourCost);
-    //     }  
-    //     if(node -> length == n && distances[node -> city][0] != 0){
-    //         if(node -> cost + distances[node -> city][0] < bestTourCost){
-    //             updateTour(bestTour, node->tour, node->length);
-    //             bestTour[n] = 0;
-    //             bestTourCost = node -> cost + distances[node -> city][0];
-    //         }
-    //     }else{
-    //         for(int v = 0; v < n; v++){
-    //             if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
-    //                 newLb = calculateNewLB(distances, node, v, n);
-    //                 if(newLb > bestTourCost){
-    //                     continue;
-    //                 }  
-    //                 double newCost = distances[node->city][v] + node -> cost;
-    //                 queue_push(queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v));
-    //             }
-    //         }
+    //Adds 0's neighbours to workers queues.
+    queue_element* node_initial = queueElementCreate(tour, 0, lb, 1, 0);
+    int current_index = 0;
+    for(int i = 0; i < n; i++){
+        if(distances[0][i] != 0){
+            double newLb = calculateNewLB(distances, node_initial, i, n);
+            if(newLb > bestTourCost){
+                printf("não entra\n");
+                continue;
+            }
+            double newCost = distances[node_initial->city][i] + node_initial->cost;      
+            queue_push(list_queues[current_index % (num_threads)], queueElementCreate(node_initial->tour, newCost, newLb, 2, i));
+            current_index++;
+        }
+    }
+    bestTourPair** results = (bestTourPair**) malloc((num_threads) * sizeof(bestTourPair));
+    for(int i = 0; i < num_threads; i++){
+        results[i] = bestTourPairCreate(tour, bestTourCost);
+    }
+    // FILE * fp = fopen("out", "w");
+    // for(int i = 0; i < num_threads; i++){
+    //     printf("Queue %d: \n", i);
+    //     priority_queue_t *queue_copy = queue_duplicate(list_queues[i]);
+    //     printf("Size: %ld\n", queue_copy -> size);
+    //     while (queue_copy->size > 0){
+    //         void* node = queue_pop(queue_copy);
+    //         fprintf(fp, "Queue: %d\n", i);
+    //         print_queue_node(fp, node);
     //     }
-    //     queue_element_delete(node);
+    //     queue_delete(queue_copy);
+    //     free(queue_copy);
     // }
-    // //free(tour);
-    //list_queues_delete(list_queues);
-
-
-
-    int *tour1 = (int*) calloc((n+1), sizeof(int));
-    return bestTourPairCreate(tour1, bestTourCost);
+    #pragma omp parallel
+    {   
+        double bestTourCost_threads = bestTourCost;
+        int finished = 0;
+        priority_queue_t *queue = list_queues[omp_get_thread_num()];
+        int* bestTour = (int*) calloc((n+1), sizeof(int));
+        if(queue -> size != 0){
+            priority_queue_t *queue_duplicated = queue_duplicate(queue);
+            queue_element * current = (queue_element*) queue_pop(queue_duplicated);  
+            updateTour(bestTour, current->tour, current->length);
+            bestTourCost_threads = current -> cost;
+        }
+        double newLb;
+        while(queue -> size != 0 && finished == 0){
+            queue_element *node = (queue_element*) queue_pop(queue);
+            if(node -> lb >= bestTourCost){
+                finished = 1;
+                results[omp_get_thread_num()] = bestTourPairCreate(bestTour, bestTourCost_threads);
+            }  
+            if(node -> length == n && distances[node -> city][0] != 0){
+                if(node -> cost + distances[node -> city][0] < bestTourCost){
+                    updateTour(bestTour, node->tour, node->length);
+                    bestTour[n] = 0;
+                    bestTourCost_threads = node -> cost + distances[node -> city][0];
+                }
+            }else{
+                for(int v = 0; v < n; v++){
+                    if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
+                        newLb = calculateNewLB(distances, node, v, n);
+                        if(newLb > bestTourCost){
+                            continue;
+                        }  
+                        double newCost = distances[node->city][v] + node -> cost;
+                        queue_push(queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v));
+                    }
+                }
+            }
+            queue_element_delete(node);
+        }
+        results[omp_get_thread_num()] = bestTourPairCreate(bestTour, bestTourCost_threads);
+        // while (queue -> size != 0) {
+        //     queue_element_delete(queue_pop(queue));
+        // }
+        //queue_delete(queue);
+        // free(queue);
+    }
+    free(tour);
+    list_queues_delete(list_queues);
+    int best = 0, cost_min = results[0] -> bestTourCost;
+    for(int i = 0; i < num_threads; i++){
+        printf("BestTourCost : %f\n", results[i]-> bestTourCost);
+        if(results[i]-> bestTourCost < cost_min){
+            best = i;
+            cost_min = results[i]->bestTourCost;
+        }
+    }
+    return results[best];
 }
     
 
