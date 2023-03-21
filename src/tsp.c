@@ -16,8 +16,6 @@ int main(int argc, char *argv[]) {
     //export OMP_NUM_THREADS = 4
     //int num_threads = omp_get_num_threads();
 
-    
-
     fp = fopen(argv[1], "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
@@ -29,18 +27,11 @@ int main(int argc, char *argv[]) {
 
     double** distances = (double **) malloc(sizeof(double) *n);
     
-    //TODO: pragma for aqui
-    //#pragma omp for
+    #pragma omp parallel for
     for(int i = 0; i < n; i++) 
-        //TODO: trocar para calloc
-        distances[i] = (double *)malloc(n * sizeof(double));
+        distances[i] = (double *)calloc(n, sizeof(double));
     if(n_edges)
         free(n_edges);
-    
-    //TODO: retirar quando tiver calloc
-    for(int i = 0; i < n; i++)
-        for(int j = 0; j < n; j++)
-            distances[i][j] = 0;
 
     //TODO: threads para ler um subset de linhas!
     while ((read = getline(&line, &len, fp)) != -1) {
@@ -132,6 +123,7 @@ bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
 
 void findTwoSmallest(double *edges, int n, double *smallests){
     double min1 = 0.0, min2 = 0.0;
+    #pragma omp parallel for reduction(min:min1) reduction(min:min2)
     for(int i = 0; i < n; i++){
         if(edges[i] != 0){
             if(min1 == 0.0 || edges[i] < min1){
@@ -150,7 +142,7 @@ void findTwoSmallest(double *edges, int n, double *smallests){
 double calculateLB(double **distances, int n){
     double lb = 0.0;
     double smallests[2];
-    //TODO: pode ser paralelo pragma for
+    #pragma omp parallel for reduction(+:lb)
     for(int i = 0; i < n; i++){
         findTwoSmallest(distances[i], n, smallests);
         lb += (smallests[0] + smallests[1]);
@@ -186,7 +178,6 @@ char cmp(void* queue_element_1, void* queue_element_2) {
 }
 
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
-
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
     if(lb > bestTourCost){ //caso nao tenha solução
@@ -307,19 +298,44 @@ void print_matrix(double** distances, int n) {
 }
 
 void* updateTour(int (*newTour), int (*tour), int length){
-    //TODO: pragma for 
+    #pragma omp parallel for
     for(int i = 0; i < length; i++)
         newTour[i] = tour[i];
     return newTour;
 }
 
 int checkInTour(int (*tour), int city, int length){
-    //TODO: pragma for 
-    for(int i = 0; i < length; i++)
-        if(tour[i] == city)
+    for(int i = 0; i < length; i++){
+        if(tour[i] == city){
             return 1;
+        }
+    }
     return 0;
-}
+} //We have tested and its not worth it to parallelize
+
+/*int checkInTour(int (*tour), int city, int length){
+    int found = 0;
+    #pragma omp parallel for reduction(+:found)
+    for(int i = 0; i < length; i++){
+        if(tour[i] == city){
+            found = 1;
+            break;
+        }
+    }
+    return found;
+}*/
+
+/*int checkInTour(int (*tour), int city, int length){
+    int found = 0;
+    #pragma omp parallel for shared(found)
+    for(int i = 0; i < length; i++){
+        if(tour[i] == city){
+            #pragma omp critical
+            found = 1;
+        }
+    }
+    return found;
+}*/
 
 double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
     double newLb = 0.0;
