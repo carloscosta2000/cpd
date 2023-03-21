@@ -1,0 +1,30 @@
+Tour: 0 6 
+Cost: 1.20
+Lower Bound: 14.35
+Length: 2
+City: 6
+Tour: 0 9 
+Cost: 3.70
+Lower Bound: 15.35
+Length: 2
+City: 9
+Tour: 0 7 
+Cost: 6.70
+Lower Bound: 18.05
+Length: 2
+City: 7
+Tour: 0 1 
+Cost: 7.40
+Lower Bound: 19.25
+Length: 2
+City: 1
+Tour: 0 2 
+Cost: 4.30
+Lower Bound: 16.25
+Length: 2
+City: 2
+Tour: 0 5 
+Cost: 7.60
+Lower Bound: 19.35
+Length: 2
+City: 5

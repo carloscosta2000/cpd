@@ -123,7 +123,7 @@ bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
 
 void findTwoSmallest(double *edges, int n, double *smallests){
     double min1 = 0.0, min2 = 0.0;
-    #pragma omp parallel for reduction(min:min1) reduction(min:min2)
+    //#pragma omp parallel for reduction(min:min1) reduction(min:min2)
     for(int i = 0; i < n; i++){
         if(edges[i] != 0){
             if(min1 == 0.0 || edges[i] < min1){
@@ -200,6 +200,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                 if(distances[0][i] != 0){
                     double newLb = calculateNewLB(distances, node_initial, i, n);
                     if(newLb > bestTourCost){
+                        printf("sdada");
                         continue;
                     }
                     double newCost = distances[node_initial->city][i] + node_initial->cost;      
@@ -230,8 +231,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
     
             //int* bestTour = (int*) calloc((n+1), sizeof(int));
             
-            queue_element * current = (queue_element*) queue_pop(list_queues[omp_get_thread_num() - 1]);
-            printf("Size: %ld\n", list_queues[0]->size);   
+            //queue_element * current = (queue_element*) queue_pop(list_queues[omp_get_thread_num() - 1]);
+            //printf("Size: %ld\n", list_queues[0]->size);   
             
             //updateTour(bestTour, current->tour, current->length);
             
