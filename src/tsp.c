@@ -275,16 +275,19 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
     free(tour);
     list_queues_delete(list_queues);
     int best = 0, cost_min = results[0] -> bestTourCost;
+    int bestSameCostCounter = 0;
+
     for(int i = 0; i < num_threads; i++){
         printf("BestTourCost : %f\n", results[i]-> bestTourCost);
-        if(results[i]-> bestTourCost < cost_min){
+        if(results[i]-> bestTourCost <= cost_min){
             best = i;
             cost_min = results[i]->bestTourCost;
+            bestSameCostCounter++;
         }
     }
+    
     return results[best];
 }
-    
 
 void print_matrix(double** distances, int n) {
     printf("\n");
