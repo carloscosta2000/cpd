@@ -246,7 +246,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
         double newLb;
         //while(queue -> size != 0 && finished == 0){
         while(finished == 0){
-            printf("Thread: %d; Size of queue: %ld\n", omp_get_thread_num(), list_queues[omp_get_thread_num()] -> size);
+            //printf("Thread: %d; Size of queue: %ld\n", omp_get_thread_num(), list_queues[omp_get_thread_num()] -> size);
             queue_element *node;
             #pragma omp critical 
             {
