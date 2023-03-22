@@ -258,12 +258,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                 for (int i = 0; i < omp_get_num_threads(); i++) {
                     #pragma omp critical 
                     {
-                        if (list_queues[i] -> size < __INT_MAX__) {
+                        if (list_queues[i] -> size < __INT_MAX__) 
                             if ((int) list_queues[i] -> size > biggestQueueSize) {
                                 biggestQueue = i;
                                 biggestQueueSize = (int) list_queues[i] -> size;
                             } 
-                        }
                     }
                 }
                 if(biggestQueueSize <= 0){
@@ -286,9 +285,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                     }
                     for(int i = 0; i < releases; i++)
                         queue_push(queue, (queue_element*) queue_pop(list_queues[biggestQueue]));
-                }
-                if(queue -> size > 0)
                     node = (queue_element*) queue_pop(queue);
+                }
             }
             if(node -> lb >= bestTourCost){
                 #pragma omp critical 
@@ -296,7 +294,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                     queue_element_delete(node);
                     while(queue -> size > 0){
                         node = (queue_element*) queue_pop(queue);
-                        //queue_element_delete(node);
+                        //queue_element_delete(new_node);
                     }
                     // queue_delete(queue);
                     // list_queues[omp_get_thread_num()] = queue_create(cmp);
@@ -309,7 +307,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                     bestTour[n] = 0;
                     bestTourCost_threads = node -> cost + distances[node -> city][0];
                 }
-                
             }else{
                 for(int v = 0; v < n; v++){
                     if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
