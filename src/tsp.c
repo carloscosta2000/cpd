@@ -225,6 +225,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
     int *tour = (int*) calloc((n+1), sizeof(int));
     
     double lb = calculateLB(distances, n);
+
     if(lb > bestTourCost){ //caso nao tenha solução
         return bestTourPairCreate(tour, -1.0, 1);
     }
@@ -323,7 +324,7 @@ void print_matrix(double** distances, int n) {
 }
 
 void* updateTour(int (*newTour), int (*tour), int length){
-    //#pragma omp parallel for
+    #pragma omp parallel for
     for(int i = 0; i < length; i++)
         newTour[i] = tour[i];
     return newTour;
