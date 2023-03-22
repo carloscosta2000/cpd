@@ -323,7 +323,7 @@ void print_matrix(double** distances, int n) {
 }
 
 void* updateTour(int (*newTour), int (*tour), int length){
-    #pragma omp parallel for
+    //#pragma omp parallel for
     for(int i = 0; i < length; i++)
         newTour[i] = tour[i];
     return newTour;
