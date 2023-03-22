@@ -254,9 +254,34 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
         }
 
         double newLb;
-        while(queue -> size != 0 && finished == 0){
-            
-            queue_element *node = (queue_element*) queue_pop(queue);
+        //while(queue -> size != 0 && finished == 0){
+        while(finished == 0){
+            queue_element *node;
+            #pragma omp critical 
+            {
+                node = (queue_element*) queue_pop(queue);
+            }
+            if (node == NULL) {
+                printf("Thread %d is empty!\n", omp_get_thread_num());
+                int biggestQueue = -1;
+                int biggestQueueSize = -1;
+                for (int i = 0; i < omp_get_num_threads(); i++) {
+                    #pragma omp critical 
+                    {
+                        if (list_queues[i] -> size < __INT_MAX__) {
+                            if ((int) list_queues[i] -> size > biggestQueue) {
+                                biggestQueue = i;
+                                printf("ASDASD %d\n", i);
+                                biggestQueueSize = (int) list_queues[i] -> size;
+                            } 
+                            printf("Queue size Thread %d: %ld\n", i, list_queues[i] -> size);
+                        }
+                    }
+                }
+                printf("Biggest Queue: %d", biggestQueue);
+
+
+            }
 
             if(node -> lb >= bestTourCost){
                 finished = 1;
@@ -278,6 +303,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                         }  
                         double newCost = distances[node->city][v] + node -> cost;
                         queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v);
+                        #pragma omp critical
                         queue_push(queue, newElement);
                     }
                 }
