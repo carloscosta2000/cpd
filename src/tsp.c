@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
     {
         num_threads = omp_get_num_threads();
     }
-    printf("Threads: %d\n", num_threads);
+    //printf("Threads: %d\n", num_threads);
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -246,6 +246,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
         double newLb;
         //while(queue -> size != 0 && finished == 0){
         while(finished == 0){
+            printf("Thread: %d; Size of queue: %ld\n", omp_get_thread_num(), list_queues[omp_get_thread_num()] -> size);
             queue_element *node;
             #pragma omp critical 
             {
@@ -263,6 +264,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                                 biggestQueueSize = (int) list_queues[i] -> size;
                             } 
                     }
+                    
                     if(biggestQueueSize < 1){
                         finished = 1;
                     }else{
@@ -290,7 +292,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                 if(finished == 1)
                     continue; 
             }
-            if(node -> lb >= bestTourCost){
+            if(node -> lb >= bestTourCost_threads){
                 #pragma omp critical 
                 {
                     queue_element_delete(node);
@@ -298,7 +300,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                         queue_element_delete((queue_element*) queue_pop(queue));
                     }
                     // queue_delete(queue);
+                    // free(list_queues[omp_get_thread_num()]);
                     // list_queues[omp_get_thread_num()] = queue_create(cmp);
+                    // printf("ALO\n");
                 }
                 continue;
             }  
@@ -312,7 +316,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                 for(int v = 0; v < n; v++){
                     if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
                         newLb = calculateNewLB(distances, node, v, n);
-                        if(newLb > bestTourCost){
+                        if(newLb > bestTourCost_threads){
                             continue;
                         }  
                         double newCost = distances[node->city][v] + node -> cost;
