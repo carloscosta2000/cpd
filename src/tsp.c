@@ -266,13 +266,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                         }
                     }
                 }
-                if(biggestQueueSize == 0){
+                if(biggestQueueSize <= 0){
                     finished = 1;
                     continue;
                 }
                 #pragma omp critical 
                 {
-                    node = (queue_element*) queue_pop(list_queues[biggestQueue]);
                     int releases = 0;
                     switch (biggestQueueSize) {
                         case 0 ... 9999:
@@ -285,14 +284,13 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                             releases = biggestQueueSize / 4;
                             break;
                     }
-                    for(int i = 0; i < releases; i++){
-                        queue_element* next_nodes = (queue_element*) queue_pop(list_queues[biggestQueue]);
-                        queue_push(queue, next_nodes);
-                    }
+                    for(int i = 0; i < releases; i++)
+                        queue_push(queue, (queue_element*) queue_pop(list_queues[biggestQueue]));
                 }
+                if(queue -> size > 0)
+                    node = (queue_element*) queue_pop(queue);
             }
             if(node -> lb >= bestTourCost){
-                //printf("Parei %d\n", omp_get_thread_num());
                 #pragma omp critical 
                 {
                     queue_element_delete(node);
@@ -300,6 +298,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
                         node = (queue_element*) queue_pop(queue);
                         //queue_element_delete(node);
                     }
+                    // queue_delete(queue);
+                    // list_queues[omp_get_thread_num()] = queue_create(cmp);
                 }
                 continue;
             }  
