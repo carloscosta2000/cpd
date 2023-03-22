@@ -120,11 +120,10 @@ void bestTourPairDelete(bestTourPair *btPair){
     free(btPair);
 }
 
-bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost, int finished){
+bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
     bestTourPair *btPair = malloc(sizeof(bestTourPair));
     btPair->bestTour = bestTour;
     btPair -> bestTourCost = bestTourCost;
-    btPair -> finished = finished;
     return btPair;
 }
 
@@ -216,7 +215,7 @@ priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(*
 bestTourPair** init_results(int num_threads, int* tour, double bestTourCost){
     bestTourPair** results = (bestTourPair**) malloc((num_threads) * sizeof(bestTourPair));
     for(int i = 0; i < num_threads; i++){
-        results[i] = bestTourPairCreate(tour, bestTourCost, 0);
+        results[i] = bestTourPairCreate(tour, bestTourCost);
     }
     return results;
 }
@@ -225,7 +224,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
     if(lb > bestTourCost){ //caso nao tenha solução
-        return bestTourPairCreate(tour, -1.0, 1);
+        return bestTourPairCreate(tour, -1.0);
     }
     //Creation of the Array of Queues for each thread.
     priority_queue_t ** list_queues = init_list_queues(num_threads);
@@ -255,46 +254,48 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
             if (node == NULL) {
                 int biggestQueue = -1;
                 int biggestQueueSize = -1;
-                for (int i = 0; i < omp_get_num_threads(); i++) {
-                    #pragma omp critical 
-                    {
+                #pragma omp critical 
+                {   
+                    for (int i = 0; i < omp_get_num_threads(); i++) {
                         if (list_queues[i] -> size < __INT_MAX__) 
                             if ((int) list_queues[i] -> size > biggestQueueSize) {
                                 biggestQueue = i;
                                 biggestQueueSize = (int) list_queues[i] -> size;
                             } 
                     }
-                }
-                if(biggestQueueSize <= 0){
-                    finished = 1;
-                    continue;
-                }
-                #pragma omp critical 
-                {
-                    int releases = 0;
-                    switch (biggestQueueSize) {
-                        case 0 ... 9999:
-                            releases = biggestQueueSize / 2;
-                            break;
-                        case 10000 ... 100000:
-                            releases = biggestQueueSize / 3;
-                            break;
-                        default:
-                            releases = biggestQueueSize / 4;
-                            break;
+                    if(biggestQueueSize < 1){
+                        finished = 1;
+                    }else{
+                        int releases = 0;
+                        switch (biggestQueueSize) {
+                            case 0 ... 9999:
+                                releases = biggestQueueSize / 2;
+                                break;
+                            case 10000 ... 100000:
+                                releases = biggestQueueSize / 3;
+                                break;
+                            default:
+                                releases = biggestQueueSize / 4;
+                                break;
+                        }
+                        for(int i = 0; i < releases; i++){
+                            queue_push(queue, (queue_element*) queue_pop(list_queues[biggestQueue]));
+                        }
                     }
-                    for(int i = 0; i < releases; i++)
-                        queue_push(queue, (queue_element*) queue_pop(list_queues[biggestQueue]));
-                    node = (queue_element*) queue_pop(queue);
+                    if(queue -> size > 0)
+                        node = (queue_element*) queue_pop(queue);
+                    else
+                        finished = 1;
                 }
+                if(finished == 1)
+                    continue; 
             }
             if(node -> lb >= bestTourCost){
                 #pragma omp critical 
                 {
                     queue_element_delete(node);
                     while(queue -> size > 0){
-                        node = (queue_element*) queue_pop(queue);
-                        //queue_element_delete(new_node);
+                        queue_element_delete((queue_element*) queue_pop(queue));
                     }
                     // queue_delete(queue);
                     // list_queues[omp_get_thread_num()] = queue_create(cmp);
@@ -324,8 +325,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
             queue_element_delete(node);
         }
         if(bestTour[n] == 0){
-            bestTourPair * bestpair = bestTourPairCreate(bestTour, bestTourCost_threads, 1);
-            results[omp_get_thread_num()] = bestpair;
+            results[omp_get_thread_num()] = bestTourPairCreate(bestTour, bestTourCost_threads);
         }
         // while (queue -> size != 0) {
         //     queue_element_delete(queue_pop(queue));
@@ -335,15 +335,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_th
     }
     free(tour);
     list_queues_delete(list_queues);
-    int best = 0, cost_min = results[0] -> bestTourCost;
+    int best = 0;
     for(int i = 0; i < num_threads; i++){
-        if(results[i] != NULL){
-            //printf("BestTourCost : %.2f\n", results[i]-> bestTourCost);
-            if(results[i]-> bestTourCost <= cost_min && results[i] -> finished == 1){
+        if(results[i] != NULL)
+            if(results[i]->bestTourCost <= results[best]->bestTourCost)
                 best = i;
-                cost_min = results[i]->bestTourCost;
-            }
-        }
     }
     return results[best];
 }

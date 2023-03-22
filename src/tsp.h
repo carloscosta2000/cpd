@@ -28,7 +28,7 @@ void list_queues_delete(priority_queue_t** queues);
 void queue_element_delete(queue_element *e);
 
 //Create and initialize the BestTourPair
-bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost, int finished);
+bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
 
 //Creates queues
 priority_queue_t ** init_list_queues(int num_threads);
