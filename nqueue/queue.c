@@ -58,11 +58,11 @@ priority_queue_t *queue_create(char (*cmp)(void *, void *))
 // Delete the priority queue
 void queue_delete(priority_queue_t *queue)
 {
-	omp_set_lock(&queue->lock);
+	//omp_set_lock(&queue->lock);
 	queue->size = -1;
 	queue->max_size = -1;
 	free(queue->buffer);
-	omp_unset_lock(&queue->lock);
+	//omp_unset_lock(&queue->lock);
 	omp_destroy_lock(&queue->lock);
 }
 
