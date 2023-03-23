@@ -228,10 +228,13 @@ int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *qu
     }else{
         int releases = 0;
         switch (biggestQueueSize) {
-            case 0 ... 9999:
+            case 0 ... 99:
+                releases = 0;
+                break;
+            case 100 ... 99999:
                 releases = biggestQueueSize / 2;
                 break;
-            case 10000 ... 100000:
+            case 100000 ... 1000000:
                 releases = biggestQueueSize / 3;
                 break;
             default:
