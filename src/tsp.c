@@ -6,13 +6,14 @@
 
 int main(int argc, char *argv[]) {
     FILE * fp;
-    char * line = NULL;
+    
     size_t len = 0;
     ssize_t read;
     char * n_edges = NULL;
     int n;
     double exec_time;
     bestTourPair *bestTour;
+
     //export OMP_NUM_THREADS
 
     int num_threads = 0;
@@ -29,7 +30,11 @@ int main(int argc, char *argv[]) {
     if((read = getline(&n_edges, &len, fp)) == -1)
         exit(EXIT_FAILURE);
 
-    sscanf(strtok(n_edges, " "), "%d", &n); 
+    char * split = strtok(n_edges, " ");
+    n = atoi(split);
+
+    split = strtok(NULL, " ");
+    int num_edges = atoi(split);
 
     double** distances = (double **) malloc(sizeof(double) *n);
     
@@ -40,19 +45,26 @@ int main(int argc, char *argv[]) {
         free(n_edges);
 
     //TODO: threads para ler um subset de linhas!
-    while ((read = getline(&line, &len, fp)) != -1) {
+    #pragma omp parallel
+    {   
+        char * line = malloc(sizeof(char*) * 50);
         int first_city;
-        sscanf(strtok(line, " "), "%d", &first_city);
         int second_city;
-        sscanf(strtok(NULL, " "), "%d", &second_city);
         double edge;
-        sscanf(strtok(NULL, " "), "%lf", &edge);
-        distances[first_city][second_city] = edge;
-        distances[second_city][first_city] = edge;   
+        #pragma omp for
+        for(int i = 0; i < num_edges; i++){
+            if((read = getline(&line, &len, fp)) != -1){
+                printf("Line %d: %s\n",omp_get_thread_num(), line);
+                sscanf(strtok(line, " "), "%d", &first_city);
+                sscanf(strtok(NULL, " "), "%d", &second_city);
+                sscanf(strtok(NULL, " "), "%lf", &edge);
+                distances[first_city][second_city] = edge;
+                distances[second_city][first_city] = edge;
+            }
+        }
+        if(line)
+            free(line);
     }
-
-    if(line)
-        free(line);
     fclose(fp);
     
     double bestTourCost = atof(argv[2]);
