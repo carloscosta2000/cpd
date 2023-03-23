@@ -284,7 +284,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
             }
             int can_remove = 0;
             #pragma omp critical(bestTourCost)
-            {
+            {   //check if the best node in the queue is worst than the bestTourCost
+                //if it is , then all of the queue is too, so it deletes the node and cleans the queue
                 if(node != NULL && node -> lb >= bestTourCost){
                     can_remove = 1;
                     #pragma omp critical(sizeQueues)
@@ -298,7 +299,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                 list_queues[omp_get_thread_num()] = queue_create(cmp);
                 queue = list_queues[omp_get_thread_num()];
                 continue;
-            }  
+            }
+            //if the tour is complete and the cost is lower than bestTourCost, the bestTour and bestTourCost are updated
             if(node != NULL && node -> length == n && distances[node -> city][0] != 0){
                 #pragma omp critical(bestTourCost)
                 {   
@@ -308,7 +310,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         bestTourCost = (node -> cost) + (distances[node -> city][0]);
                     }
                 }
-            }else{
+            }else{ //continues to expand this node, checking is neighbours that aren't in the tour
                 for(int v = 0; v < n; v++){
                     if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
                         newLb = calculateNewLB(distances, node, v, n);
@@ -331,16 +333,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
             if(node != NULL)
                 queue_element_delete(node);
         }
-        
-        // while (queue -> size != 0) {
-        //     queue_element_delete(queue_pop(queue));
-        // }
-        //queue_delete(queue);
-        // free(queue);
     }
     free(tour);
     list_queues_delete(list_queues);
-    if(bestTour[n] == 0){
+    if(bestTour[n] == 0){ //if the tour 
         return bestTourPairCreate(bestTour, bestTourCost);
     }
     return bestTourPairCreate(bestTour, -1);
