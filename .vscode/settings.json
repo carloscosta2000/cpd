@@ -3,6 +3,7 @@
         "queue.h": "c",
         "tsp.h": "c",
         "stdio.h": "c",
-        "types.h": "c"
+        "types.h": "c",
+        "omp.h": "c"
     }
 }

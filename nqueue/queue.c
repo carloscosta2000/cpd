@@ -42,10 +42,11 @@ void bubble_down(priority_queue_t *queue, size_t node)
 // Create a new priority queue
 priority_queue_t *queue_create(char (*cmp)(void *, void *))
 {
+	
 	priority_queue_t *queue;
 
 	queue = malloc(sizeof(priority_queue_t));
-
+	omp_init_lock(&queue->lock);
 	queue->buffer = malloc(REALLOC_SIZE * sizeof(void*));
 	queue->max_size = REALLOC_SIZE;
 	queue->size = 0;
@@ -59,6 +60,7 @@ void queue_delete(priority_queue_t *queue)
 {
 	queue->size = -1;
 	queue->max_size = -1;
+	omp_destroy_lock(&queue->lock);
 	free(queue->buffer);
 }
 
@@ -71,7 +73,7 @@ void queue_push(priority_queue_t *queue, void* new_element)
 		queue->max_size += REALLOC_SIZE;
 		queue->buffer = realloc(queue->buffer, queue->max_size * sizeof(void*));
 	}
-	
+	omp_set_lock(&queue->lock);
 	// Insert the new_element at the end of the buffer
 	size_t node = queue->size;
 	queue->buffer[queue->size++] = new_element;
@@ -84,14 +86,15 @@ void queue_push(priority_queue_t *queue, void* new_element)
 		SWAP(queue->buffer[node], queue->buffer[parent])
 		node = parent;
 	}
+	omp_unset_lock(&queue->lock);
 }
 
 // Return the element with the lowest value in the queue, after removing it.
 void* queue_pop(priority_queue_t *queue)
 {
         if(queue->size == 0)
-	    return NULL;
-
+	    	return NULL;
+	omp_set_lock(&queue->lock);
         // Stores the lowest element in a temporary
 	void* top_val = queue->buffer[0];
 	
@@ -103,7 +106,7 @@ void* queue_pop(priority_queue_t *queue)
 	
 	// Sort the queue based on the value of the nodes.
 	bubble_down(queue, 0);
-	
+	omp_unset_lock(&queue->lock);
 	return top_val;
 }
 

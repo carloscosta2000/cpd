@@ -4,12 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <omp.h>
 
 // A queue where the elements are stored in an increasing order.
 // This implementation uses a binary heap.
 typedef struct
-{
+{	
+	omp_lock_t lock;
 	void** buffer;
 	size_t size;
 	size_t max_size;
