@@ -36,6 +36,13 @@ priority_queue_t ** init_list_queues(int num_threads);
 //Adds 0's neighbours to workers queues.
 priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial);
 
+/**
+ * Checks the sizes of the queues of all threads, returns the size of the biggest
+ * if the size of the biggest queue, calculates a slice (proportional to the size of the queue)
+ * and pushes that number of elements from the biggest queue, to the empty queue
+*/
+int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *queue);
+
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int num_threads);
 

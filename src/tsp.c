@@ -33,9 +33,6 @@ int main(int argc, char *argv[]) {
     char * split = strtok(n_edges, " ");
     n = atoi(split);
 
-    split = strtok(NULL, " ");
-    int num_edges = atoi(split);
-
     double** distances = (double **) malloc(sizeof(double) *n);
     
     #pragma omp parallel for
@@ -230,13 +227,13 @@ int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *qu
     }else{
         int releases = 0;
         switch (biggestQueueSize) {
-            case 0 ... 99:
+            case 0 ... 9999:
                 releases = 0;
                 break;
-            case 100 ... 99999:
+            case 10000 ... 999999:
                 releases = biggestQueueSize / 2;
                 break;
-            case 100000 ... 1000000:
+            case 1000000 ... 10000000:
                 releases = biggestQueueSize / 3;
                 break;
             default:
@@ -271,12 +268,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
             queue_element* node = (queue_element*) queue_pop(queue);
             if (node == NULL) {
                 #pragma omp critical(sizeQueues)
-                {   
-                    int biggestQueueSize = get_biggest_queue_size(list_queues, queue);
-                    if(biggestQueueSize == -1){
-                        finished = 1;
-                    }
-                }
+                if(get_biggest_queue_size(list_queues, queue) == -1)
+                    finished = 1;
+                
                 if(queue -> size > 0)
                     node = (queue_element*) queue_pop(queue);
                 else{
@@ -312,17 +306,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         bestTourCost = (node -> cost) + (distances[node -> city][0]);
                     }
                 }
-            }else{ //continues to expand this node, checking is neighbours that aren't in the tour
-                for(int v = 0; v < n; v++){
+            }else //continues to expand this node, checking is neighbours that aren't in the tour
+                for(int v = 0; v < n; v++)
                     if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
                         newLb = calculateNewLB(distances, node, v, n);
                         int skip = 0;
                         #pragma omp critical(bestTourCost)
-                        {   
-                            if(newLb > bestTourCost){
-                                skip = 1;
-                            }
-                        }
+                        if(newLb > bestTourCost)
+                            skip = 1;
                         if(skip == 1)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
@@ -330,8 +321,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         #pragma omp critical(sizeQueues)
                         queue_push(queue, newElement);
                     }
-                }
-            }
             if(node != NULL)
                 queue_element_delete(node);
         }
@@ -368,31 +357,7 @@ int checkInTour(int (*tour), int city, int length){
         }
     }
     return 0;
-} //We have tested and its not worth it to parallelize
-
-/*int checkInTour(int (*tour), int city, int length){
-    int found = 0;
-    #pragma omp parallel for reduction(+:found)
-    for(int i = 0; i < length; i++){
-        if(tour[i] == city){
-            found = 1;
-            break;
-        }
-    }
-    return found;
-}*/
-
-/*int checkInTour(int (*tour), int city, int length){
-    int found = 0;
-    #pragma omp parallel for shared(found)
-    for(int i = 0; i < length; i++){
-        if(tour[i] == city){
-            #pragma omp critical
-            found = 1;
-        }
-    }
-    return found;
-}*/
+}
 
 double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
     double newLb = 0.0;
