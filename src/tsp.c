@@ -280,16 +280,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                 }    
             }
             if(node != NULL && node -> lb >= bestTourCost){
-                #pragma omp critical 
-                {
-                    queue_element_delete(node);
-                    while(queue -> size > 0){
-                        queue_element_delete((queue_element*) queue_pop(queue));
-                    }
-                    // queue_delete(queue);
-                    // free(list_queues[omp_get_thread_num()]);
-                    // list_queues[omp_get_thread_num()] = queue_create(cmp);
-                }
+                queue_element_delete(node);
+                list_queues[omp_get_thread_num()] = queue_create(cmp);
+                queue_delete(queue);
+                queue = list_queues[omp_get_thread_num()];
                 continue;
             }  
             if(node != NULL && node -> length == n && distances[node -> city][0] != 0){
@@ -298,7 +292,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                     if(node -> cost + distances[node -> city][0] < bestTourCost){
                         updateTour(bestTour, node->tour, node->length);
                         bestTour[n] = 0;
-                        //#pragma omp atomic write
                         bestTourCost = (node -> cost) + (distances[node -> city][0]);
                     }
                 }
