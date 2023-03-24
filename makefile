@@ -19,7 +19,7 @@ SRCS = $(SRC_DIR)/tsp.c $(QUEUE_DIR)/queue.c
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Define the target executable file
-TARGET = tsp
+TARGET = tsp-omp
 
 # Define the rule to compile the source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
