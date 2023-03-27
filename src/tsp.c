@@ -87,7 +87,7 @@ void list_queues_delete(priority_queue_t** queues){
     }
 }
 
-queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city) {
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, int *path_to_zero, int links_to_zero) {
     queue_element *newElement = malloc(sizeof(queue_element));
     if (newElement == NULL) {
         fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
@@ -102,6 +102,21 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
     for(int i = 0; i < length - 1; i++)
         newElement->tour[i] = tour[i];
     newElement->tour[length-1] = city;
+
+    newElement->path_to_zero = malloc(links_to_zero * sizeof(int));
+    if (newElement->path_to_zero == NULL) {
+        fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
+        free(newElement);
+        exit(EXIT_FAILURE);
+    }
+
+    newElement -> path_to_zero = path_to_zero;
+    for(int i = 0; i < links_to_zero; i++)
+        if(newElement -> path_to_zero[i] == city){
+            newElement -> path_to_zero[i] = 0;
+            break;
+        }
+
     newElement->cost = cost;
     newElement->lb = lb;
     newElement->length = length;
@@ -194,7 +209,7 @@ priority_queue_t ** init_list_queues(int num_threads){
 }
 
 //Adds 0's neighbours to workers queues.
-priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial){
+priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial, int * paths_to_zero, int links_to_zero){
     int current_index = 0;
     for(int i = 0; i < n; i++){
         if(distances[0][i] != 0){
@@ -205,7 +220,7 @@ priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(*
                 continue;
             }
             double newCost = distances[node_initial->city][i] + node_initial->cost;      
-            queue_push(list_queues[current_index % (num_threads)], queueElementCreate(node_initial->tour, newCost, newLb, 2, i));
+            queue_push(list_queues[current_index % (num_threads)], queueElementCreate(node_initial->tour, newCost, newLb, 2, i, paths_to_zero, links_to_zero));
             current_index++;
         }
     }
@@ -246,6 +261,79 @@ int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *qu
     return biggestQueueSize;
 }
 
+int get_links_paths_to_zero(double(** distances), int n){
+    int links = 0;
+    for(int i = 1; i < n; i++)
+        if(distances[0][i] != 0)
+            links++;
+    return links;
+}
+
+int* fill_paths_to_zero(double(** distances), int n, int links_to_zero){
+    int * paths_to_zero = malloc(links_to_zero * sizeof(int));
+    int pos = 0;
+    for(int i = 1; i < n; i++)
+        if(distances[0][i] != 0){
+            paths_to_zero[pos] = i;
+            pos++;
+        }
+    return paths_to_zero;
+}
+
+int check_paths_to_zero(queue_element* element, int links_to_zero){
+    for(int i = 0; i < links_to_zero; i++)
+        if(element -> path_to_zero[i] != 0)
+            return 1;
+    return 0;
+}
+
+void print_matrix(double** distances, int n) {
+    printf("\n");
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++)
+            printf("%.1lf ", distances[i][j]);
+        printf("\n");
+    }
+    printf("\n");
+}
+
+void* updateTour(int (*newTour), int (*tour), int length){
+    #pragma omp parallel for
+    for(int i = 0; i < length; i++)
+        newTour[i] = tour[i];
+    return newTour;
+}
+
+int checkInTour(int (*tour), int city, int length){
+    for(int i = 0; i < length; i++){
+        if(tour[i] == city){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
+    double newLb = 0.0;
+    double distance = distances[city_from->city][city_to];
+    newLb = (city_from -> lb) + distance;
+    double smallests[2];
+    findTwoSmallest(distances[city_from->city], length, smallests);
+    double min_f = 0;
+    if(distance>= smallests[1])
+        min_f = smallests[1];
+    else
+        min_f = smallests[0];
+    findTwoSmallest(distances[city_to], length, smallests);
+    double min_t = 0;
+    if(distance>= smallests[1])
+        min_t = smallests[1];
+    else
+        min_t = smallests[0];
+    newLb -= ((min_f + min_t) / 2);
+    return newLb;
+}
+
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int num_threads){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
@@ -255,10 +343,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
     if(lb > bestTourCost){ //caso nao tenha solução
         return bestTourPairCreate(tour, -1.0);
     }
+    int links_to_zero = get_links_paths_to_zero(distances, n);
+    int * paths_to_zero = fill_paths_to_zero(distances, n, links_to_zero);
     //Creation of the Array of Queues for each thread.
     priority_queue_t ** list_queues = init_list_queues(num_threads);
-    queue_element* node_initial = queueElementCreate(tour, 0, lb, 1, 0);
-    list_queues = add_initial_values(list_queues, distances, n, num_threads, bestTourCost, node_initial);
+    queue_element* node_initial = queueElementCreate(tour, 0, lb, 1, 0, paths_to_zero, links_to_zero);
+    list_queues = add_initial_values(list_queues, distances, n, num_threads, bestTourCost, node_initial, paths_to_zero, links_to_zero);
     #pragma omp parallel
     {   
         int finished = 0;
@@ -314,10 +404,15 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         #pragma omp critical(bestTourCost)
                         if(newLb > bestTourCost)
                             skip = 1;
+                        
                         if(skip == 1)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
-                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v);
+                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_to_zero, links_to_zero);
+                        
+                        if(check_paths_to_zero(newElement, links_to_zero) == 0)
+                            continue;
+                    
                         #pragma omp critical(sizeQueues)
                         queue_push(queue, newElement);
                     }
@@ -331,51 +426,4 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
         return bestTourPairCreate(bestTour, bestTourCost);
     }
     return bestTourPairCreate(bestTour, -1);
-}
-
-void print_matrix(double** distances, int n) {
-    printf("\n");
-    for(int i = 0; i < n; i++) {
-        for(int j = 0; j < n; j++)
-            printf("%.1lf ", distances[i][j]);
-        printf("\n");
-    }
-    printf("\n");
-}
-
-void* updateTour(int (*newTour), int (*tour), int length){
-    #pragma omp parallel for
-    for(int i = 0; i < length; i++)
-        newTour[i] = tour[i];
-    return newTour;
-}
-
-int checkInTour(int (*tour), int city, int length){
-    for(int i = 0; i < length; i++){
-        if(tour[i] == city){
-            return 1;
-        }
-    }
-    return 0;
-}
-
-double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
-    double newLb = 0.0;
-    double distance = distances[city_from->city][city_to];
-    newLb = (city_from -> lb) + distance;
-    double smallests[2];
-    findTwoSmallest(distances[city_from->city], length, smallests);
-    double min_f = 0;
-    if(distance>= smallests[1])
-        min_f = smallests[1];
-    else
-        min_f = smallests[0];
-    findTwoSmallest(distances[city_to], length, smallests);
-    double min_t = 0;
-    if(distance>= smallests[1])
-        min_t = smallests[1];
-    else
-        min_t = smallests[0];
-    newLb -= ((min_f + min_t) / 2);
-    return newLb;
 }
