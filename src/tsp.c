@@ -109,13 +109,14 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
         free(newElement);
         exit(EXIT_FAILURE);
     }
-
-    for(int i = 0; i < links_to_zero; i++)
-        if(path_to_zero[i] == city)
-            newElement -> path_to_zero[i] = 0;
-        else
+    int pos = 0;
+    for(int i = 0; i < links_to_zero+1; i++)
+        if(path_to_zero[i] != city){
             newElement -> path_to_zero[i] = path_to_zero[i];
-
+            pos++;
+        }
+            
+    newElement->links_to_zero = links_to_zero;
     newElement->cost = cost;
     newElement->lb = lb;
     newElement->length = length;
@@ -410,7 +411,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         if(skip == 1)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
-                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_to_zero, links_to_zero);
+                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_to_zero, node -> links_to_zero-1);
                         #pragma omp critical(sizeQueues)
                         queue_push(queue, newElement);
                     }     

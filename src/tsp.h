@@ -12,6 +12,7 @@ typedef struct bestTourPair {
 typedef struct queue_element {
     int* tour;
     int * path_to_zero;
+    int links_to_zero;
     double cost;
     double lb;
     int length;
