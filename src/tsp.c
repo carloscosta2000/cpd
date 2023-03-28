@@ -395,7 +395,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         bestTourCost = (node -> cost) + (distances[node -> city][0]);
                     }
                 }
-            }else //continues to expand this node, checking is neighbours that aren't in the tour
+            }else{ //continues to expand this node, checking is neighbours that aren't in the tour
+                if(check_paths_to_zero(node, links_to_zero) == 0)
+                    continue;
                 for(int v = 0; v < n; v++)
                     if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
                         newLb = calculateNewLB(distances, node, v, n);
@@ -406,15 +408,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         
                         if(skip == 1)
                             continue;
-
-                        if(check_paths_to_zero(node, links_to_zero) == 0)
-                            continue;
-                        
                         double newCost = distances[node->city][v] + node -> cost;
                         queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_to_zero, links_to_zero);
                         #pragma omp critical(sizeQueues)
                         queue_push(queue, newElement);
-                    }
+                    }     
+                }
             if(node != NULL)
                 queue_element_delete(node);
         }
