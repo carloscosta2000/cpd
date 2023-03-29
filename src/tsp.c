@@ -104,8 +104,7 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
         newElement->tour[i] = tour[i];
     newElement->tour[length-1] = city;
 
-    newElement->path_zero = path_zero;
-    newElement->path_zero &= ~(1L << city);
+    newElement->path_zero = path_zero & ~(1L << city);
     newElement->cost = cost;
     newElement->lb = lb;
     newElement->length = length;
@@ -364,9 +363,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                 continue;
             }
             if(node -> length != n && node -> path_zero == 0){
-                queue_element_delete(node);
-                list_queues[omp_get_thread_num()] = queue_create(cmp);
-                queue = list_queues[omp_get_thread_num()];
                 continue;
             }
                 
@@ -383,19 +379,19 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
             }else{ //continues to expand this node, checking is neighbours that aren't in the tour
                 for(int v = 0; v < n; v++)
                     if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
-                        newLb = calculateNewLB(distances, node, v, n);
-                        int skip = 0;
-                        #pragma omp critical(bestTourCost)
-                        if(newLb > bestTourCost)
-                            skip = 1;
-                        
-                        if(skip == 1)
-                            continue;
-                        double newCost = distances[node->city][v] + node -> cost;
-                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero);
-                        if(newElement -> length != n && newElement -> path_zero == 0){
+                        if(node -> length + 1 != n && (node -> path_zero & ~(1L << 7)) == 0){
                             continue;
                         }else{
+                            newLb = calculateNewLB(distances, node, v, n);
+                            int skip = 0;
+                            #pragma omp critical(bestTourCost)
+                            if(newLb > bestTourCost)
+                                skip = 1;
+                            
+                            if(skip == 1)
+                                continue;
+                            double newCost = distances[node->city][v] + node -> cost;
+                            queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero);
                             #pragma omp critical(sizeQueues)
                             queue_push(queue, newElement);
                         }
