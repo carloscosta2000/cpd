@@ -7,7 +7,7 @@ int main() {
 
     printf("array: %ld\n", bit_array);
     // Set the 2nd and 7th bits
-    bit_array |= (1L << 2);
+    bit_array = bit_array | (1L << 2);
     bit_array |= (1L << 7);
     bit_array |= (1L << 10);
     printf("array: %ld\n", bit_array);
@@ -39,6 +39,7 @@ int main() {
 
     // Print the set bits in the bit array
     printf("Set bits: ");
+    printf("LONG SIZE -> %ld\n", LONG_SIZE);
     for (int i = 0; i < LONG_SIZE; i++) 
         if (bit_array & (1L << i)) 
             printf("%d ", i);
