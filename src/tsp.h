@@ -6,13 +6,11 @@
 typedef struct bestTourPair {
     int* bestTour;
     double bestTourCost;
-    int finished;
 } bestTourPair;
 
 typedef struct queue_element {
     int* tour;
-    int * path_to_zero;
-    int links_to_zero;
+    long path_zero;
     double cost;
     double lb;
     int length;
@@ -21,7 +19,7 @@ typedef struct queue_element {
 
 void list_queues_delete(priority_queue_t** queues);
 
-queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, int *path_to_zero, int links_to_zero);
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, long path_zero);
 
 void queue_element_delete(queue_element *e);
 
@@ -41,15 +39,13 @@ char cmp(void* queue_element_1, void* queue_element_2);
 priority_queue_t ** init_list_queues(int num_threads);
 
 //Adds 0's neighbours to workers queues.
-priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial, int * paths_to_zero, int links_to_zero);
+priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial, long paths_zero);
 
 int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *queue);
 
-int get_links_paths_to_zero(double(** distances), int n);
+long fill_paths_to_zero(double(** distances), int n);
 
-int* fill_paths_to_zero(double(** distances), int n, int links_to_zero);
-
-int check_paths_to_zero(queue_element* element, int links_to_zero);
+int check_paths_to_zero(queue_element* element, int n);
 
 void print_matrix(double** distances, int n);
 

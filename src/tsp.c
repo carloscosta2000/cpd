@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include "tsp.h"
 #include <omp.h>
+#define LONG_SIZE (sizeof(long) * 8)
 
 int main(int argc, char *argv[]) {
     FILE * fp;
@@ -87,7 +88,7 @@ void list_queues_delete(priority_queue_t** queues){
     }
 }
 
-queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, int *path_to_zero, int links_to_zero) {
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, long path_zero) {
     queue_element *newElement = malloc(sizeof(queue_element));
     if (newElement == NULL) {
         fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
@@ -103,20 +104,8 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
         newElement->tour[i] = tour[i];
     newElement->tour[length-1] = city;
 
-    newElement->path_to_zero = malloc(links_to_zero * sizeof(int));
-    if (newElement->path_to_zero == NULL) {
-        fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
-        free(newElement);
-        exit(EXIT_FAILURE);
-    }
-    int pos = 0;
-    for(int i = 0; i < links_to_zero+1; i++)
-        if(path_to_zero[i] != city){
-            newElement -> path_to_zero[i] = path_to_zero[i];
-            pos++;
-        }
-            
-    newElement->links_to_zero = links_to_zero;
+    newElement->path_zero = path_zero;
+    newElement->path_zero &= ~(1L << city);
     newElement->cost = cost;
     newElement->lb = lb;
     newElement->length = length;
@@ -127,7 +116,7 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
 void queue_element_delete(queue_element *e){
     if(e != NULL){
         free(e-> tour);
-        free(e->path_to_zero);
+        //free(e->path_zero);
         free(e);
     }
 }
@@ -210,7 +199,7 @@ priority_queue_t ** init_list_queues(int num_threads){
 }
 
 //Adds 0's neighbours to workers queues.
-priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial, int * paths_to_zero, int links_to_zero){
+priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(** distances), int n, int num_threads, double bestTourCost, queue_element* node_initial, long paths_zero){
     int current_index = 0;
     for(int i = 0; i < n; i++){
         if(distances[0][i] != 0){
@@ -221,7 +210,7 @@ priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(*
                 continue;
             }
             double newCost = distances[node_initial->city][i] + node_initial->cost;      
-            queue_push(list_queues[current_index % (num_threads)], queueElementCreate(node_initial->tour, newCost, newLb, 2, i, paths_to_zero, links_to_zero));
+            queue_push(list_queues[current_index % (num_threads)], queueElementCreate(node_initial->tour, newCost, newLb, 2, i, paths_zero));
             current_index++;
         }
     }
@@ -262,29 +251,21 @@ int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *qu
     return biggestQueueSize;
 }
 
-int get_links_paths_to_zero(double(** distances), int n){
-    int links = 0;
+long fill_paths_to_zero(double(** distances), int n){
+    long bit_array = 0;
     for(int i = 1; i < n; i++)
         if(distances[0][i] != 0)
-            links++;
-    return links;
+            bit_array |= (1L << i);
+    return bit_array;
 }
 
-int* fill_paths_to_zero(double(** distances), int n, int links_to_zero){
-    int * paths_to_zero = malloc(links_to_zero * sizeof(int));
-    int pos = 0;
-    for(int i = 1; i < n; i++)
-        if(distances[0][i] != 0){
-            paths_to_zero[pos] = i;
-            pos++;
-        }
-    return paths_to_zero;
-}
-
-int check_paths_to_zero(queue_element* element, int links_to_zero){
-    for(int i = 0; i < links_to_zero; i++)
-        if(element -> path_to_zero[i] != 0)
+int check_paths_to_zero(queue_element* element, int n){
+    for(int i = 0; i < n; i++)
+        if (element -> path_zero & (1L << i)){
+            //printf("return 1\n");
             return 1;
+        }
+    printf("return 0\n");   
     return 0;
 }
 
@@ -344,12 +325,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
     if(lb > bestTourCost){ //caso nao tenha solução
         return bestTourPairCreate(tour, -1.0);
     }
-    int links_to_zero = get_links_paths_to_zero(distances, n);
-    int * paths_to_zero = fill_paths_to_zero(distances, n, links_to_zero);
+    long paths_zero = fill_paths_to_zero(distances, n);
     //Creation of the Array of Queues for each thread.
     priority_queue_t ** list_queues = init_list_queues(num_threads);
-    queue_element* node_initial = queueElementCreate(tour, 0, lb, 1, 0, paths_to_zero, links_to_zero);
-    list_queues = add_initial_values(list_queues, distances, n, num_threads, bestTourCost, node_initial, paths_to_zero, links_to_zero);
+    queue_element* node_initial = queueElementCreate(tour, 0, lb, 1, 0, paths_zero);
+    list_queues = add_initial_values(list_queues, distances, n, num_threads, bestTourCost, node_initial, paths_zero);
     #pragma omp parallel
     {   
         int finished = 0;
@@ -387,7 +367,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                 queue = list_queues[omp_get_thread_num()];
                 continue;
             }
-            if(node -> length != n && check_paths_to_zero(node, links_to_zero) == 0)
+            if(node -> length != n && check_paths_to_zero(node, n) == 0)
                     continue;
             //if the tour is complete and the cost is lower than bestTourCost, the bestTour and bestTourCost are updated
             if(node != NULL && node -> length == n && distances[node -> city][0] != 0){
@@ -411,7 +391,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                         if(skip == 1)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
-                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_to_zero, node -> links_to_zero-1);
+                        queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero);
                         #pragma omp critical(sizeQueues)
                         queue_push(queue, newElement);
                     }     
