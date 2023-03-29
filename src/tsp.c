@@ -390,10 +390,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                             
                             if(skip == 1)
                                 continue;
-                            double newCost = distances[node->city][v] + node -> cost;
-                            queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero);
                             #pragma omp critical(sizeQueues)
-                            queue_push(queue, newElement);
+                            queue_push(queue, queueElementCreate(node->tour, distances[node->city][v] + node -> cost, newLb, node->length+1, v, node -> path_zero));
                         }
                     }     
                 }
