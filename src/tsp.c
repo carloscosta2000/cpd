@@ -260,12 +260,8 @@ long fill_paths_to_zero(double(** distances), int n){
 }
 
 int check_paths_to_zero(queue_element* element, int n){
-    for(int i = 0; i < n; i++)
-        if (element -> path_zero & (1L << i)){
-            //printf("return 1\n");
-            return 1;
-        }
-    printf("return 0\n");   
+    if (element -> path_zero > 0)
+        return 1;
     return 0;
 }
 
