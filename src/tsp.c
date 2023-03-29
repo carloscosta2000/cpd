@@ -363,8 +363,13 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                 queue = list_queues[omp_get_thread_num()];
                 continue;
             }
-            if(node -> length != n && check_paths_to_zero(node, n) == 0)
+            if(node -> length != n && node -> path_zero == 0){
+                queue_element_delete(node);
+                list_queues[omp_get_thread_num()] = queue_create(cmp);
+                queue = list_queues[omp_get_thread_num()];
                 continue;
+            }
+                
             //if the tour is complete and the cost is lower than bestTourCost, the bestTour and bestTourCost are updated
             if(node != NULL && node -> length == n && distances[node -> city][0] != 0){
                 #pragma omp critical(bestTourCost)
@@ -388,7 +393,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
                         queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero);
-                        if(newElement -> length != n && check_paths_to_zero(newElement, n) == 0){
+                        if(newElement -> length != n && newElement -> path_zero == 0){
                             continue;
                         }else{
                             #pragma omp critical(sizeQueues)
