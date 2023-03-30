@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     //export OMP_NUM_THREADS
 
     int num_threads = 0;
-    #pragma omp single 
+    #pragma omp parallel 
     {
         num_threads = omp_get_num_threads();
     }
@@ -194,9 +194,7 @@ priority_queue_t ** add_initial_values(priority_queue_t ** list_queues, double(*
     for(int i = 0; i < n; i++){
         if(distances[0][i] != 0){
             double newLb = calculateNewLB(distances, node_initial, i, n);
-            //printf("NEWLB: %f , %d\n", newLb, i);
             if(newLb > bestTourCost){
-                //printf("Não entra 0 -> %d com lb -> %f\n", i, newLb);
                 continue;
             }
             double newCost = distances[node_initial->city][i] + node_initial->cost;      
@@ -383,11 +381,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost_copy, int n
                                 continue;
                             double newCost = distances[node->city][v] + node -> cost;
                             queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero);
-                            pos++;
                             #pragma omp critical(sizeQueues)
-                            {
-                                queue_push(list_queues[pos % (num_threads)], newElement);
-                            }
+                            queue_push(queue, newElement);
+                            pos = pos+ 1;
                         }
                     }     
                 }
