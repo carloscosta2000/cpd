@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city) {
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, long path_zero, long in_tour) {
     queue_element *newElement = malloc(sizeof(queue_element));
     if (newElement == NULL) {
         fprintf(stderr, "Error: malloc failed in queueElementCreate\n");
@@ -85,6 +85,10 @@ queue_element *queueElementCreate(int *tour, double cost, double lb, int length,
     for(int i = 0; i < length - 1; i++)
         newElement->tour[i] = tour[i];
     newElement->tour[length-1] = city;
+
+    newElement->path_zero = path_zero & ~(1L << city);
+    newElement->in_tour = in_tour |= (1L << city);
+
     newElement->cost = cost;
     newElement->lb = lb;
     newElement->length = length;
@@ -102,11 +106,31 @@ void bestTourPairDelete(bestTourPair *btPair){
     free(btPair);
 }
 
+long fill_paths_to_zero(double(** distances), int n){
+    long bit_array = 0;
+    for(int i = 1; i < n; i++)
+        if(distances[0][i] != 0)
+            bit_array |= (1L << i);
+    return bit_array;
+}
+
 bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
     bestTourPair *btPair = malloc(sizeof(bestTourPair));
     btPair->bestTour = bestTour;
     btPair -> bestTourCost = bestTourCost;
     return btPair;
+}
+
+void* updateTour(int (*newTour), int (*tour), int length){
+    for(int i = 0; i < length; i++)
+        newTour[i] = tour[i];
+    return newTour;
+}
+
+int checkInTour(long in_tour, int city){
+    if (in_tour & (1L << city))
+        return 1;
+    return 0;
 }
 
 void findTwoSmallest(double *edges, int n, double *smallests){
@@ -174,7 +198,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
         return bestTourPairCreate(tour, -1.0);
     }
     priority_queue_t *queue = queue_create(cmp);
-    queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0));
+    long bit_array = 0;
+    queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0, fill_paths_to_zero(distances, n), bit_array));
     int* bestTour = malloc((n+1)* sizeof(int));
     updateTour(bestTour, tour, n+1);
     double newLb = 0.0;
@@ -198,14 +223,17 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost){
                 bestTourCost = node -> cost + distances[node -> city][0];
             }
         }else{
+            if(node -> path_zero == 0){
+                continue;
+            }
             for(int v = 0; v < n; v++){
-                if(distances[node->city][v] != 0 && checkInTour(node->tour, v, node -> length) == 0){
+                if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
                     newLb = calculateNewLB(distances, node, v, n);
                     if(newLb > bestTourCost){
                         continue;
                     }  
                     double newCost = distances[node->city][v] + node -> cost;
-                    queue_push(queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v));
+                    queue_push(queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour));
                 }
             }
         }
@@ -230,19 +258,6 @@ void print_matrix(double** distances, int n) {
     printf("\n");
 }
 
-void* updateTour(int (*newTour), int (*tour), int length){
-    for(int i = 0; i < length; i++)
-        newTour[i] = tour[i];
-    return newTour;
-}
-
-int checkInTour(int (*tour), int city, int length){
-    for(int i = 0; i < length; i++)
-        if(tour[i] == city)
-            return 1;
-    return 0;
-}
-
 double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length){
     double newLb = 0.0;
     double distance = distances[city_from->city][city_to];
@@ -263,3 +278,5 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
     newLb -= ((min_f + min_t) / 2);
     return newLb;
 }
+
+

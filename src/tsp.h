@@ -10,13 +10,19 @@ typedef struct bestTourPair {
 
 typedef struct queue_element {
     int* tour;
+    long path_zero;
+    long in_tour;
     double cost;
     double lb;
     int length;
     int city;
 } queue_element;
 
-queue_element *queueElementCreate(int(* tour), double cost, double lb, int length, int city);
+int check_paths_to_zero(queue_element* element, int n);
+
+long fill_paths_to_zero(double(** distances), int n);
+
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, long path_zero, long in_tour);
 
 void bestTourPairDelete(bestTourPair *btPair);
 
@@ -32,7 +38,7 @@ void findTwoSmallest(double *edges, int n, double *smallests);
 
 void* updateTour(int (*newTour), int (*tour), int length);
 
-int checkInTour(int (*tour), int city, int length);
+int checkInTour(long in_tour, int city);
 
 double calculateNewLB(double(** distances),queue_element* city_from, int city_to, int length);
 
