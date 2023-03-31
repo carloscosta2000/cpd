@@ -22,7 +22,7 @@ int check_paths_to_zero(queue_element* element, int n);
 
 long fill_paths_to_zero(double(** distances), int n);
 
-queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, long path_zero, long in_tour);
+queue_element *queueElementCreate(int *tour, double cost, double lb, int length, int city, long path_zero, long in_tour, int n);
 
 void bestTourPairDelete(bestTourPair *btPair);
 
@@ -36,7 +36,7 @@ double calculateLB(double ** distances, int n);
 
 void findTwoSmallest(double *edges, int n, double *smallests);
 
-void* updateTour(int (*newTour), int (*tour), int length);
+void updateTour(int (*newTour), int (*tour), int length);
 
 int checkInTour(long in_tour, int city);
 
