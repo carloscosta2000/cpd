@@ -113,9 +113,7 @@ bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost){
 }
 
 void updateTour(int (*newTour), int (*tour), int length){
-    // memcpy(newTour, tour, length);
-    for(int i = 0; i < length; i++)
-        newTour[i] = tour[i];
+    memcpy(newTour, tour, length* sizeof(int));
 }
 
 int checkInTour(long in_tour, int city){
