@@ -20,6 +20,7 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
 
 # Define the target executable file
 TARGET = tsp
+TARGETMPI = tsp-mpi
 
 # Define the rule to compile the source files into object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
@@ -39,3 +40,7 @@ clean:
 
 run: $(TARGET)
 	./$(TARGET) ex2.in 40
+
+tsp-mpi: $(TARGETMPI)
+	mpicc $(CFLAGS) $(OBJS) -o $(TARGETMPI)
+

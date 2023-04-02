@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include "tsp.h"
 #include <omp.h>
+#include <mpi.h>
 
 int main(int argc, char *argv[]) {
     FILE * fp;
@@ -12,6 +13,15 @@ int main(int argc, char *argv[]) {
     char * n_edges = NULL;
     int n;
     double exec_time;
+
+    int i, id, p;
+
+    MPI_Init (&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    MPI_Comm_size(MPI_COMM_WORLD, &p);
+    printf("ID:%d\n", id);
+    printf("p:%d\n", p);
+
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -67,6 +77,7 @@ int main(int argc, char *argv[]) {
     }
     free(distances);
     bestTourPairDelete(pair);
+    MPI_Finalize();
     return 0;
 }
 
