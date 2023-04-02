@@ -264,11 +264,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             queue_element_delete(node);
             counter++;
         }
-        free(tour);
-        queue_delete(queue);
-        free(queue);
-        return bestTourPairCreate(bestTour, bestTourCost);
     }
+    free(tour);
+    queue_delete(queue);
+    free(queue);
+    return bestTourPairCreate(bestTour, bestTourCost);
 }
 
 
