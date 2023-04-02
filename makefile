@@ -1,46 +1,20 @@
 # Define the compiler to use
-CC = gcc
+CC = mpicc
 
 # Define the compiler flags to use
-CFLAGS = -Wall -Werror -g -O3 -fopenmp
+CFLAGS = -Wall -Werror -g -O3 -fopenmp -f
 
-# Define the directories for source and object files
-SRC_DIR = src
-OBJ_DIR = obj
-QUEUE_DIR = nqueue
+OBJS = tsp.o queue.o
 
-# Create the obj directory
-$(shell mkdir -p $(OBJ_DIR))
+tsp-mpi: $(OBJS)
+	$(CC) $(CFLAGS) -o tsp-mpi $(OBJS) -lm
 
-# Define the source files to compile
-SRCS = $(SRC_DIR)/tsp.c $(QUEUE_DIR)/queue.c
+tsp.o: src/tsp.c src/tsp.h
+	$(CC) $(CFLAGS) -c tsp.c
 
-# Define the object files to generate
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCS))
+queue.o: ../nqueue/queue.c ../nqueue/queue.h
+	$(CC) $(CFLAGS) -c ../nqueue/queue.c
 
-# Define the target executable file
-TARGET = tsp
-TARGETMPI = tsp-mpi
-
-# Define the rule to compile the source files into object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Define the rule to build the target executable
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(TARGET)
-
-# Define the default rule to build the target executable
-all: $(TARGET)
-
-# Define the rule to clean up object files and the target executable
 clean:
-	rm -f $(OBJ_DIR)/*.o $(TARGET)
-	rm -f $(TARGET)
-
-run: $(TARGET)
-	./$(TARGET) ex2.in 40
-
-tsp-mpi: $(TARGETMPI)
-	mpicc $(CFLAGS) $(OBJS) -o $(TARGETMPI)
+	rm -f tsp-mpi $(OBJS)
 

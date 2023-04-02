@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     int n;
     double exec_time;
 
-    int i, id, p;
+    int id, p;
 
     MPI_Init (&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
