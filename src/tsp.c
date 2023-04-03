@@ -266,6 +266,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
+    if (id == 0) {
+        bestTourPair* arr = malloc(p * sizeof(bestTourPair));
+        arr[id] = bestTourPairCreate(bestTour, bestTourCost);
+    }
     free(tour);
     queue_delete(queue);
     free(queue);
