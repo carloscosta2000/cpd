@@ -2,6 +2,7 @@
 #include "../nqueue/queue.h"
 #include <sys/types.h>
 #include "tsp.h"
+#include <math.h>
 #include <omp.h>
 #include <mpi.h>
 
@@ -26,18 +27,18 @@ int main(int argc, char *argv[]) {
     fp = fopen(argv[1], "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
-    
+
     if((read = getline(&n_edges, &len, fp)) == -1)
         exit(EXIT_FAILURE);
 
-    sscanf(strtok(n_edges, " "), "%d", &n); 
+    sscanf(strtok(n_edges, " "), "%d", &n);
 
     double** distances = (double **) malloc(sizeof(double) *n);
-    for(int i = 0; i < n; i++) 
+    for(int i = 0; i < n; i++)
         distances[i] = (double *)malloc(n * sizeof(double));
     if(n_edges)
         free(n_edges);
-    
+
     for(int i = 0; i < n; i++)
         for(int j = 0; j < n; j++)
             distances[i][j] = 0;
@@ -50,17 +51,17 @@ int main(int argc, char *argv[]) {
         double edge;
         sscanf(strtok(NULL, " "), "%lf", &edge);
         distances[first_city][second_city] = edge;
-        distances[second_city][first_city] = edge;   
+        distances[second_city][first_city] = edge;
     }
 
     if(line)
         free(line);
     fclose(fp);
-    
+
     double bestTourCost = atof(argv[2]);
     int counter = 0;
     exec_time = -omp_get_wtime();
-    
+
     bestTourPair *pair = TSPBB(distances, n, bestTourCost, id, p, counter);
     exec_time += omp_get_wtime();
     fprintf(stderr, "%.1fs\n", exec_time);
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]) {
     if(pair -> bestTourCost == -1.0)
         printf("NO SOLUTION\n");
     else{
-        printf("%.1f\n", pair->bestTourCost);  
+        printf("%.1f\n", pair->bestTourCost);
         for(int i = 0; i < n+1; i++)
             printf("%d ", pair -> bestTour[i]);
         printf("\n");
@@ -231,7 +232,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0, fill_paths_to_zero(distances, n), bit_array, n+1));
     double newLb = 0.0;
 
-    
+
     while(queue -> size != 0){
         if(counter % p == id) {
             queue_element *node = (queue_element*) queue_pop(queue);
@@ -240,7 +241,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 queue_delete(queue);
                 free(queue);
                 return bestTourPairCreate(bestTour, bestTourCost);
-            }  
+            }
             if(node -> length == n && distances[node -> city][0] != 0){
                 if(node -> cost + distances[node -> city][0] < bestTourCost){
                     updateTour(bestTour, node->tour, n+1);
@@ -269,13 +270,29 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     if (id == 0) {
         bestTourPair* arr = malloc(p * sizeof(bestTourPair));
         arr[id] = bestTourPairCreate(bestTour, bestTourCost);
+        for (int i = 1; i < p; i++) {
+            int status;
+            int* tourAux = malloc((n+1) * sizeof(int));
+            double costAux;
+            MPI_Recv(tourAux, sizeof(tourAux), MPI_BYTE, i, TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
+            arr[i] = bestTourPairCreate(tourAux, costAux);
+        }
+        double compare = INFINITY;
+        for (int j = 0; j < p; j++) {
+            if (arr[j].bestTourCost < compare) {
+                compare = arr[j].bestTourCost;
+                bestTourCost = arr[j].bestTourCost;
+                bestTour = arr[j].bestTour;
+            }
+        }
+        return bestTourPairCreate(bestTour, bestTourCost);
+    } else {
+        MPI_Send(bestTour, sizeof(bestTour), MPI_BYTE, 0, TAG, MPI_COMM_WORLD);
+        MPI_Send(bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
     free(tour);
     queue_delete(queue);
     free(queue);
-    return bestTourPairCreate(bestTour, bestTourCost);
+    
 }
-
-
-
-
