@@ -270,13 +270,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
         bestTourPair* results = malloc(p * sizeof(bestTourPair));
-        &results[id] = bestTourPairCreate(bestTour, bestTourCost);
+        results[id] = &bestTourPairCreate(bestTour, bestTourCost);
         for (int i = 1; i < p; i++) {
+            MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
             double costAux;
-            MPI_Recv(tourAux, sizeof(tourAux), MPI_BYTE, i, TAG, MPI_COMM_WORLD);
-            MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD);
-            results[i] = bestTourPairCreate(tourAux, costAux);
+            MPI_Recv(tourAux, sizeof(tourAux), MPI_BYTE, i, TAG, MPI_COMM_WORLD, &status);
+            MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
+            results[i] = &bestTourPairCreate(tourAux, costAux);
         }
         double compare = INFINITY;
         for (int j = 0; j < p; j++) {
