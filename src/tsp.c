@@ -5,6 +5,7 @@
 #include <math.h>
 #include <omp.h>
 #include <mpi.h>
+#define TAG 123
 
 int main(int argc, char *argv[]) {
     FILE * fp;
@@ -268,10 +269,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
-        bestTourPair* arr = malloc(p * sizeof(bestTourPair));
-        arr[id] = bestTourPairCreate(bestTour, bestTourCost);
+        bestTourPair* results = malloc(p * sizeof(bestTourPair));
+        &results[id] = bestTourPairCreate(bestTour, bestTourCost);
         for (int i = 1; i < p; i++) {
-            int status;
+            MPI_STATUS* status;
             int* tourAux = malloc((n+1) * sizeof(int));
             double costAux;
             MPI_Recv(tourAux, sizeof(tourAux), MPI_BYTE, i, TAG, MPI_COMM_WORLD, &status);
@@ -280,19 +281,19 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
         double compare = INFINITY;
         for (int j = 0; j < p; j++) {
-            if (arr[j].bestTourCost < compare) {
-                compare = arr[j].bestTourCost;
-                bestTourCost = arr[j].bestTourCost;
-                bestTour = arr[j].bestTour;
+            if (results[j].bestTourCost < compare) {
+                compare = results[j].bestTourCost;
+                bestTourCost = results[j].bestTourCost;
+                bestTour = results[j].bestTour;
             }
         }
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
         MPI_Send(bestTour, sizeof(bestTour), MPI_BYTE, 0, TAG, MPI_COMM_WORLD);
-        MPI_Send(bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
+        MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
     free(tour);
     queue_delete(queue);
     free(queue);
-    
+    return null;
 }
