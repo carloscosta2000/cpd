@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
     MPI_Init (&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
-    printf("ID: %d", id);
+    printf("ID: %d\n", id);
 
 
     fp = fopen(argv[1], "r");
@@ -232,10 +232,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0, fill_paths_to_zero(distances, n), bit_array, n+1));
     double newLb = 0.0;
 
-    printf("ID in TSPBB: %d", id);
 
     while(queue -> size != 0){
         if(counter % p == id) {
+            printf("ID in TSPBB: %d\n", id);
             queue_element *node = (queue_element*) queue_pop(queue);
             if(node -> lb >= bestTourCost){
                 free(tour);
