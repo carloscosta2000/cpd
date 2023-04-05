@@ -65,13 +65,16 @@ int main(int argc, char *argv[]) {
     exec_time += omp_get_wtime();
     fprintf(stderr, "%.1fs\n", exec_time);
     //print solution
-    if(pair -> bestTourCost == -1.0)
-        printf("NO SOLUTION\n");
-    else{
-        printf("%.1f\n", pair->bestTourCost);
-        for(int i = 0; i < n+1; i++)
-            printf("%d ", pair -> bestTour[i]);
-        printf("\n");
+    if (id == 0) {
+        if(pair -> bestTourCost == -1.0)
+            printf("NO SOLUTION\n");
+        else{
+            printf("%.1f\n", pair->bestTourCost);
+            for(int i = 0; i < n+1; i++)
+                printf("%d ", pair -> bestTour[i]);
+            printf("\n");
+        }
+
     }
     for (int i = 0; i < n; i++) {
         free(distances[i]);
@@ -224,7 +227,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     double lb = calculateLB(distances, n);
     int* bestTour = (int*) calloc((n+1), sizeof(int));
     if(lb > bestTourCost){ //caso nao tenha solução
-        printf("DEU MERDA GUYS.\n");
         return bestTourPairCreate(tour, -1.0);
     }
     priority_queue_t *queue = queue_create(cmp);
@@ -270,7 +272,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     printf("ID: %d", id);
-        if (id == 0) {
+    if (id == 0) {
         printf("I AM 0\n");
         bestTourPair* results = malloc(p * sizeof(bestTourPair));
         results[id] = *bestTourPairCreate(bestTour, bestTourCost);
@@ -280,16 +282,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             double costAux;
             MPI_Recv(tourAux, sizeof(tourAux), MPI_BYTE, i, TAG, MPI_COMM_WORLD, &status);
             MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
-            results[i] = *bestTourPairCreate(tourAux, costAux);
-        }
-        double compare = INFINITY;
-        for (int j = 0; j < p; j++) {
-            printf("IN FOR\n");
-            if (results[j].bestTourCost < compare) {
-                printf("Solution %d: %f\n", j, results[j].bestTourCost);
-                compare = results[j].bestTourCost;
-                bestTourCost = results[j].bestTourCost;
-                bestTour = results[j].bestTour;
+            if (costAux < bestTourCost) {
+                bestTourCost = costAux;
+                bestTour = tourAux;
             }
         }
         //TODO frees
@@ -301,5 +296,5 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     free(tour);
     queue_delete(queue);
     free(queue);
-    return bestTourPairCreate(NULL, -1.0);;
+    return bestTourPairCreate(NULL, -1.0);
 }
