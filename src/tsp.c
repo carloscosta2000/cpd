@@ -237,9 +237,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             printf("ID in TSPBB: %d\n", id);
             queue_element *node = (queue_element*) queue_pop(queue);
             if(node -> lb >= bestTourCost){
-                free(tour);
-                queue_delete(queue);
-                free(queue);
+                //free(tour);
+                //queue_delete(queue);
+                //free(queue);
                 break;
                 //return bestTourPairCreate(bestTour, bestTourCost);
             }
