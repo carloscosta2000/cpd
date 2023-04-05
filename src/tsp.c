@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
     MPI_Init (&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
-    printf("ID: %d\n", id);
 
 
     fp = fopen(argv[1], "r");
@@ -241,7 +240,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 free(tour);
                 queue_delete(queue);
                 free(queue);
-                return bestTourPairCreate(bestTour, bestTourCost);
+                break;
+                //return bestTourPairCreate(bestTour, bestTourCost);
             }
             if(node -> length == n && distances[node -> city][0] != 0){
                 if(node -> cost + distances[node -> city][0] < bestTourCost){
