@@ -62,10 +62,10 @@ int main(int argc, char *argv[]) {
     exec_time = -omp_get_wtime();
 
     bestTourPair *pair = TSPBB(distances, n, bestTourCost, id, p, counter);
-    exec_time += omp_get_wtime();
-    fprintf(stderr, "%.1fs\n", exec_time);
-    //print solution
     if (id == 0) {
+        exec_time += omp_get_wtime();
+        fprintf(stderr, "%.1fs\n", exec_time);
+        //print solution
         if(pair -> bestTourCost == -1.0)
             printf("NO SOLUTION\n");
         else{
@@ -271,9 +271,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    printf("ID: %d", id);
     if (id == 0) {
-        printf("I AM 0\n");
         bestTourPair* results = malloc(p * sizeof(bestTourPair));
         results[id] = *bestTourPairCreate(bestTour, bestTourCost);
         for (int i = 1; i < p; i++) {
