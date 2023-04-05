@@ -224,6 +224,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     double lb = calculateLB(distances, n);
     int* bestTour = (int*) calloc((n+1), sizeof(int));
     if(lb > bestTourCost){ //caso nao tenha solução
+        printf("DEU MERDA GUYS.\n");
         return bestTourPairCreate(tour, -1.0);
     }
     priority_queue_t *queue = queue_create(cmp);
