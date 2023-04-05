@@ -232,6 +232,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0, fill_paths_to_zero(distances, n), bit_array, n+1));
     double newLb = 0.0;
 
+    printf("ID in TSPBB: %d", id);
 
     while(queue -> size != 0){
         if(counter % p == id) {
