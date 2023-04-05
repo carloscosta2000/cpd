@@ -233,7 +233,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
 
     while(queue -> size != 0){
-        //if(counter % p == id) {
+        if(counter % p == id) {
             queue_element *node = (queue_element*) queue_pop(queue);
             if(node -> lb >= bestTourCost){
                 free(tour);
@@ -262,8 +262,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
             queue_element_delete(node);
-            counter++;
-        //}
+        }
+        counter++;
+
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
@@ -280,6 +281,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         double compare = INFINITY;
         for (int j = 0; j < p; j++) {
             if (results[j].bestTourCost < compare) {
+                printf("Solution %d: %f\n", j, results[j].bestTourCost);
                 compare = results[j].bestTourCost;
                 bestTourCost = results[j].bestTourCost;
                 bestTour = results[j].bestTour;
