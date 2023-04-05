@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
     MPI_Init (&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
+    printf("ID: %d", id);
 
 
     fp = fopen(argv[1], "r");
@@ -267,7 +268,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     }
     MPI_Barrier(MPI_COMM_WORLD);
-    if (id == 0) {
+    printf("ID: %d", id);
+        if (id == 0) {
+        printf("I AM 0\n");
         bestTourPair* results = malloc(p * sizeof(bestTourPair));
         results[id] = *bestTourPairCreate(bestTour, bestTourCost);
         for (int i = 1; i < p; i++) {
@@ -280,6 +283,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
         double compare = INFINITY;
         for (int j = 0; j < p; j++) {
+            printf("IN FOR\n");
             if (results[j].bestTourCost < compare) {
                 printf("Solution %d: %f\n", j, results[j].bestTourCost);
                 compare = results[j].bestTourCost;
