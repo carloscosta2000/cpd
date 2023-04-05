@@ -272,8 +272,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
-        bestTourPair* results = malloc(p * sizeof(bestTourPair));
-        results[id] = *bestTourPairCreate(bestTour, bestTourCost);
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
@@ -286,6 +284,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             }
         }
         //TODO frees
+        free(tour);
+        queue_delete(queue);
+        free(queue);
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
         MPI_Send(bestTour, sizeof(bestTour), MPI_BYTE, 0, TAG, MPI_COMM_WORLD);
