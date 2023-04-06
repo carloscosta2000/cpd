@@ -6,6 +6,7 @@
 #include <omp.h>
 #include <mpi.h>
 #define TAG 123
+#define N 5000
 
 int main(int argc, char *argv[]) {
     FILE * fp;
@@ -222,6 +223,18 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
     return newLb;
 }
 
+priority_queue_t scatter(priority_queue_t queue, int id, int p) {
+    priority_queue_t newQueue = queue_create(cmp);
+    int counter = 0;
+    while (queue -> size >= 0) {
+        if (counter % p == id) {
+            queue_push(newQueue, queue_pop(queue));
+        }
+        counter++;
+    }
+    return newQueue;
+}
+
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
@@ -229,46 +242,80 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     if(lb > bestTourCost){ //caso nao tenha solução
         return bestTourPairCreate(tour, -1.0);
     }
-    priority_queue_t *queue = queue_create(cmp);
+    priority_queue_t *equal_queue = queue_create(cmp);
+    //correr algumas vezes e meter numa queue auxiliar
     long bit_array = 0;
-    queue_push(queue, queueElementCreate(tour, 0, lb, 1, 0, fill_paths_to_zero(distances, n), bit_array, n+1));
+    queue_push(equal_queue, queueElementCreate(tour, 0, lb, 1, 0, fill_paths_to_zero(distances, n), bit_array, n+1));
     double newLb = 0.0;
 
-
-    while(queue -> size != 0){
-        if(counter % p == id) {
-            queue_element *node = (queue_element*) queue_pop(queue);
-            if(node -> lb >= bestTourCost){
-                //free(tour);
-                //queue_delete(queue);
-                //free(queue);
-                break;
-                //return bestTourPairCreate(bestTour, bestTourCost);
-            }
-            if(node -> length == n && distances[node -> city][0] != 0){
-                if(node -> cost + distances[node -> city][0] < bestTourCost){
-                    updateTour(bestTour, node->tour, n+1);
-                    bestTourCost = node -> cost + distances[node -> city][0];
-                }
-            }else{
-                if(node -> path_zero == 0){
-                    queue_element_delete(node);
-                    continue;
-                }
-                for(int v = 0; v < n; v++){
-                    if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
-                        newLb = calculateNewLB(distances, node, v, n);
-                        if(newLb > bestTourCost)
-                            continue;
-                        double newCost = distances[node->city][v] + node -> cost;
-                        queue_push(queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
-                    }
-                }
-            }
-            queue_element_delete(node);
+    int iteration_counter = 0;
+    //fill queue up
+    while(iteration_counter < p * N) {
+        queue_element *node = (queue_element*) queue_pop(equal_queue);
+        if(node -> lb >= bestTourCost){
+            free(tour);
+            queue_delete(queue);
+            free(queue);
+            return bestTourPairCreate(bestTour, bestTourCost);
         }
-        counter++;
+        if(node -> length == n && distances[node -> city][0] != 0){
+            if(node -> cost + distances[node -> city][0] < bestTourCost){
+                updateTour(bestTour, node->tour, n+1);
+                bestTourCost = node -> cost + distances[node -> city][0];
+            }
+        }else{
+            if(node -> path_zero == 0){
+                queue_element_delete(node);
+                continue;
+            }
+            for(int v = 0; v < n; v++){
+                if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
+                    newLb = calculateNewLB(distances, node, v, n);
+                    if(newLb > bestTourCost)
+                        continue;
+                    double newCost = distances[node->city][v] + node -> cost;
+                    queue_push(equal_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
+                }
+            }
+        }
+        queue_element_delete(node);
+        iteration_counter++;
+    }
 
+    //TODO Scatter
+    priority_queue_t individual_queue = scatter(equal_queue, id, p);
+
+    //Checks individual nodes
+    while(individual_queue -> size != 0){
+        queue_element *node = (queue_element*) queue_pop(individual_queue);
+        if(node -> lb >= bestTourCost){
+            //free(tour);
+            //queue_delete(queue);
+            //free(queue);
+            break;
+            //return bestTourPairCreate(bestTour, bestTourCost);
+        }
+        if(node -> length == n && distances[node -> city][0] != 0){
+            if(node -> cost + distances[node -> city][0] < bestTourCost){
+                updateTour(bestTour, node->tour, n+1);
+                bestTourCost = node -> cost + distances[node -> city][0];
+            }
+        }else{
+            if(node -> path_zero == 0){
+                queue_element_delete(node);
+                continue;
+            }
+            for(int v = 0; v < n; v++){
+                if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
+                    newLb = calculateNewLB(distances, node, v, n);
+                    if(newLb > bestTourCost)
+                        continue;
+                    double newCost = distances[node->city][v] + node -> cost;
+                    queue_push(individual_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
+                }
+            }
+        }
+        queue_element_delete(node);
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
