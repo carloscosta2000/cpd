@@ -223,8 +223,8 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
     return newLb;
 }
 
-priority_queue_t scatter(priority_queue_t queue, int id, int p) {
-    priority_queue_t newQueue = queue_create(cmp);
+priority_queue_t scatter(priority_queue_t *queue, int id, int p) {
+    priority_queue_t* newQueue = queue_create(cmp);
     int counter = 0;
     while (queue -> size >= 0) {
         if (counter % p == id) {
@@ -283,7 +283,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
 
     //TODO Scatter
-    priority_queue_t individual_queue = scatter(equal_queue, id, p);
+    priority_queue_t* individual_queue = scatter(equal_queue, id, p);
 
     //Checks individual nodes
     while(individual_queue -> size != 0){
