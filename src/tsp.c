@@ -254,8 +254,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         queue_element *node = (queue_element*) queue_pop(equal_queue);
         if(node -> lb >= bestTourCost){
             free(tour);
-            queue_delete(queue);
-            free(queue);
+            queue_delete(equal_queue);
+            free(equal_queue);
             return bestTourPairCreate(bestTour, bestTourCost);
         }
         if(node -> length == n && distances[node -> city][0] != 0){
@@ -332,15 +332,15 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
         //TODO frees
         free(tour);
-        queue_delete(queue);
-        free(queue);
+        queue_delete(individual_queue);
+        free(individual_queue);
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
         MPI_Send(bestTour, sizeof(bestTour), MPI_BYTE, 0, TAG, MPI_COMM_WORLD);
         MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
     free(tour);
-    queue_delete(queue);
-    free(queue);
+    queue_delete(individual_queue);
+    free(individual_queue);
     return bestTourPairCreate(NULL, -1.0);
 }
