@@ -332,6 +332,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 bestTour = tourAux;
             }
         }
+        printf("Result in process %d:\n", id);
+        for(int i = 0; i < n+1; i++)
+            printf("%d ", bestTour[i]);
+        printf("\n");
         //TODO frees
         free(tour);
         queue_delete(individual_queue);
