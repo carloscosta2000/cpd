@@ -226,10 +226,12 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
 priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
     priority_queue_t* newQueue = queue_create(cmp);
     int counter = 0;
-    while (queue -> size >= 0) {
+    while (newQueue -> size != 0) {
         printf("SCATTER\n");
         if (counter % p == id) {
             queue_push(newQueue, queue_pop(queue));
+        } else {
+            queue_pop(queue);
         }
         counter++;
     }
