@@ -338,6 +338,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         free(individual_queue);
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
+        printf("Result in thread %d:\n", id);
+        for(int i = 0; i < n+1; i++)
+            printf("%d ", bestTour[i]);
         MPI_Send(bestTour, sizeof(bestTour), MPI_BYTE, 0, TAG, MPI_COMM_WORLD);
         MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
