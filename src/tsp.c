@@ -321,10 +321,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
-        printf("Result in process %d:\n", id);
-        for(int i = 0; i < n+1; i++)
-            printf("%d ", bestTour[i]);
-        printf("\n");
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
@@ -332,6 +328,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             MPI_Recv(tourAux, sizeof(tourAux), MPI_BYTE, i, TAG, MPI_COMM_WORLD, &status);
             MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
             if (costAux < bestTourCost) {
+                printf("Result in process %d:\n", id);
+                for(int i = 0; i < n+1; i++)
+                    printf("%d ", tourAux[i]);
+                printf("\n");
                 bestTourCost = costAux;
                 memcpy(bestTour, tourAux, n+1 * sizeof(int));
                 //bestTour = tourAux;
@@ -343,10 +343,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         free(individual_queue);
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
-        printf("Result in process %d:\n", id);
-        for(int i = 0; i < n+1; i++)
-            printf("%d ", bestTour[i]);
-        printf("\n");
         MPI_Send(bestTour, sizeof(bestTour), MPI_BYTE, 0, TAG, MPI_COMM_WORLD);
         MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
