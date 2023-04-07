@@ -334,7 +334,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     printf("%d ", tourAux[i]);
                 printf("\n");
                 bestTourCost = costAux;
-                memcpy(bestTour, tourAux, n+1 * sizeof(int));
+                memcpy(bestTour, tourAux, (n+1) * sizeof(int));
                 //bestTour = tourAux;
             }
         }
