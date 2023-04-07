@@ -321,6 +321,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
+        printf("Result in process %d:\n", id);
+        for(int i = 0; i < n+1; i++)
+            printf("%d ", bestTour[i]);
+        printf("\n");
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
@@ -332,10 +336,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 bestTour = tourAux;
             }
         }
-        printf("Result in process %d:\n", id);
-        for(int i = 0; i < n+1; i++)
-            printf("%d ", bestTour[i]);
-        printf("\n");
         //TODO frees
         free(tour);
         queue_delete(individual_queue);
