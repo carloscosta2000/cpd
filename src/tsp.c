@@ -227,6 +227,7 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
     priority_queue_t* newQueue = queue_create(cmp);
     int counter = 0;
     while (queue -> size >= 0) {
+        printf("SCATTER\n");
         if (counter % p == id) {
             queue_push(newQueue, queue_pop(queue));
         }
@@ -251,6 +252,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     int iteration_counter = 0;
     //fill queue up
     while(iteration_counter < p * N && equal_queue  -> size >= 0) {
+        printf("FIRST WHILE\n");
         queue_element *node = (queue_element*) queue_pop(equal_queue);
         if(node -> lb >= bestTourCost){
             free(tour);
@@ -287,6 +289,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     //Checks individual nodes
     while(individual_queue -> size != 0){
+        printf("2nd WHILE\n");
         queue_element *node = (queue_element*) queue_pop(individual_queue);
         if(node -> lb >= bestTourCost){
             //free(tour);
