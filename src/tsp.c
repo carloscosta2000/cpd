@@ -333,7 +333,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
             if (costAux < bestTourCost) {
                 bestTourCost = costAux;
-                bestTour = tourAux;
+                memcpy(bestTour, tourAux, n+1 * sizeof(int));
+                //bestTour = tourAux;
             }
         }
         //TODO frees
