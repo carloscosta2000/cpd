@@ -2,7 +2,7 @@
 CC = mpicc
 
 # Define the compiler flags to use
-CFLAGS = -Wall -Werror -g -O3 -fopenmp
+CFLAGS = -Wall -g -O3 -fopenmp
 
 OBJS = tsp.o queue.o
 
