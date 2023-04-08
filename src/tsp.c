@@ -6,7 +6,8 @@
 #include <omp.h>
 #include <mpi.h>
 #define TAG 123
-#define N 5000
+#define TAG_BTC 111
+#define N 20000
 
 int main(int argc, char *argv[]) {
     FILE * fp;
@@ -251,14 +252,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     double newLb = 0.0;
 
     int iteration_counter = 0;
+    int updateBestTourCost = 0;
     //fill queue up
     while(iteration_counter < p * N && equal_queue  -> size >= 0) {
+        if (updateBestTourCost % 1000) {
+            MPI_Irecv(bestTourCost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD);
+        }
         queue_element *node = (queue_element*) queue_pop(equal_queue);
         if(node -> lb >= bestTourCost){
-            // free(tour);
-            // queue_delete(equal_queue);
-            // free(equal_queue);
-            // return bestTourPairCreate(bestTour, bestTourCost);
             break
         }
         if(node -> length == n && distances[node -> city][0] != 0){
@@ -283,14 +284,18 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
         queue_element_delete(node);
         iteration_counter++;
+        updateBestTourCost++;
     }
 
-    //TODO Scatter
     priority_queue_t* individual_queue = scatter(equal_queue, id, p);
 
+    updateBestTourCost = 0;
     //Checks individual nodes
     while(individual_queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(individual_queue);
+        if (updateBestTourCost % 1000) {
+            MPI_Irecv(bestTourCost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD);
+        }
         if(node -> lb >= bestTourCost){
             break;
         }
@@ -314,7 +319,13 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
+        updateBestTourCost++;
         queue_element_delete(node);
+    }
+    for (int i = 0; i < p; i++) {
+        if (i != id) {
+            MPI_Isend(bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD);
+        }
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
