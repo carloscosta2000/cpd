@@ -255,10 +255,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     while(iteration_counter < p * N && equal_queue  -> size >= 0) {
         queue_element *node = (queue_element*) queue_pop(equal_queue);
         if(node -> lb >= bestTourCost){
-            free(tour);
-            queue_delete(equal_queue);
-            free(equal_queue);
-            return bestTourPairCreate(bestTour, bestTourCost);
+            // free(tour);
+            // queue_delete(equal_queue);
+            // free(equal_queue);
+            // return bestTourPairCreate(bestTour, bestTourCost);
+            break
         }
         if(node -> length == n && distances[node -> city][0] != 0){
             if(node -> cost + distances[node -> city][0] < bestTourCost){
