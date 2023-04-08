@@ -324,7 +324,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     for (int i = 0; i < p; i++) {
         if (i != id) {
-            MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD);
+            MPI_Request* request;
+            MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, request);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
