@@ -247,12 +247,12 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 //     return list_queues;
 // }
 
-int tourMatchesCost(int * tour, double cost, double** distances, int n) {
+int recalculatePathCost(int * tour, double** distances, int n) {
     double tourCost = 0.0;
     for (int i = 0; i < n; i++) {
         tourCost += distances[tour[i]][tour[i+1]];
     }
-    return tourCost == cost;
+    return tourCost;
 }
 
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter){
@@ -383,17 +383,30 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
+        bestTourPair* results = malloc(p * sizeof(bestTourPair));
+        results[id] = *bestTourPairCreate(bestTour, recalculatePathCost(bestTour, distances, n));
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
             double costAux;
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
-            MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
-            if (tourMatchesCost(tourAux, costAux, distances, n)) {
-                //dar return do 1o,
-                //calcular o actual cost do caminho e ver qual é que da match.
-                printf("Matches.\n");
-                bestTourCost = costAux;
+            //MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
+            // if (tourMatchesCost(tourAux, costAux, distances, n)) {
+            //     //dar return do 1o,
+            //     //calcular o actual cost do caminho e ver qual é que da match.
+            //     //pode tar mal porque se temos uma tour igual a outra
+            //     //ver se é tour e recalcular o cost
+            //     printf("Matches.\n");
+            //     bestTourCost = costAux;
+            //     memcpy(bestTour, tourAux, (n+1) * sizeof(int));
+            // }
+            results[i] = *bestTourPairCreate(tourAux, recalculatePathCost(tourAux, distances, n));
+        }
+        double reference = INFINITY;
+        for (int i = 0; i < p; i++) {
+            if (results[i] -> bestTourCost < reference) {
+                reference = results[i] -> bestTourCost;
+                bestTourCost = results[i] -> bestTourCost;
                 memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             }
         }
@@ -403,7 +416,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
         MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
-        MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
+        //MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
     free(tour);
     queue_delete(individual_queue);
