@@ -264,7 +264,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     int updateBestTourCost = 0;
     //fill queue up
     while(iteration_counter < p * N && equal_queue  -> size >= 0) {
-        if (updateBestTourCost % N == 0) {
+        if (updateBestTourCost % (N/4) == 0) {
             MPI_Request request;
             double received_best_tour_cost;
             int flag = 0;
@@ -299,7 +299,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
-        if (updateBestTourCost % (N/10) == 0) {
+        if (updateBestTourCost % (N/2) == 0) {
             printf("IN IF\n");
             for (int i = 0; i < p; i++) {
                 if (i != id) {
@@ -322,7 +322,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     //Checks individual nodes
     while(individual_queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(individual_queue);
-        if (updateBestTourCost % N == 0) {
+        if (updateBestTourCost % (N/4) == 0) {
             MPI_Request request;
             double received_best_tour_cost;
             int flag = 0;
@@ -356,7 +356,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
-        if (updateBestTourCost % (N/10) == 0) {
+        if (updateBestTourCost % (N/2) == 0) {
             printf("IN IF\n");
             for (int i = 0; i < p; i++) {
                 if (i != id) {
