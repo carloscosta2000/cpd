@@ -377,7 +377,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     if (id == 0) {
         printf("Solução do %d:", id);
         for(int k = 0; k < n + 1; k++) {
-            printf("%d ", tourAux[k]);
+            printf("%d ", bestTour[k]);
         }
         printf("\n");
         for (int i = 1; i < p; i++) {
