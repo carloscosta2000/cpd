@@ -289,7 +289,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
-        if (updateBestTourCost % (N/2) == 0) {
+        if (updateBestTourCost % (N/10) == 0) {
             printf("IN IF\n");
             for (int i = 0; i < p; i++) {
                 if (i != id) {
@@ -343,7 +343,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
-        if (updateBestTourCost % (N/2) == 0) {
+        if (updateBestTourCost % (N/10) == 0) {
             printf("IN IF\n");
             for (int i = 0; i < p; i++) {
                 if (i != id) {
