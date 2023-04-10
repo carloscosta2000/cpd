@@ -394,25 +394,18 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             double costAux;
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
             MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
-            if (costAux < solutionCost) {
-                solutionCost = costAux;
+            if (costAux < bestTourCost || !isATour(bestTour, n)) {
+                bestTourCost = costAux;
                 memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             }
         }
         free(tour);
         queue_delete(individual_queue);
         free(individual_queue);
-        return bestTourPairCreate(bestTour, solutionCost);
+        return bestTourPairCreate(bestTour, bestTourCost);
     } else {
-        if (solutionCost == 0.0) {
-            //didn't find a solution, send dummy
-            MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
-            double doubleMax = __DBL_MAX__;
-            MPI_Send(&doubleMax, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
-        } else {
-            MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
-            MPI_Send(&solutionCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
-        }
+        MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
+        MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
     free(tour);
     queue_delete(individual_queue);
