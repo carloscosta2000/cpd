@@ -405,6 +405,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         free(individual_queue);
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
+        if (id == 1) {
+            printf("Solução do %d:", id);
+            for(int j = 0; j < n + 1; j++) {
+                printf("%d ", bestTour[j]);
+            }
+        }
         MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
         MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
