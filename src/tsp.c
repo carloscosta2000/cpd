@@ -384,7 +384,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
         bestTourPair* results = malloc(p * sizeof(bestTourPair));
-        results[id] = *bestTourPairCreate(bestTour, recalculatePathCost(bestTour, distances, n));
+        if (recalculatePathCost(bestTour, distances, n) != 0.0) {
+            results[id] = *bestTourPairCreate(bestTour, recalculatePathCost(bestTour, distances, n));
+        } else {
+            results[id] = *bestTourPairCreate(bestTour, INFINITY);
+        }
+
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
@@ -400,7 +405,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             //     bestTourCost = costAux;
             //     memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             // }
-            results[i] = *bestTourPairCreate(tourAux, recalculatePathCost(tourAux, distances, n));
+            if (recalculatePathCost(tourAux, distances, n) != 0) {
+                results[i] = *bestTourPairCreate(tourAux, recalculatePathCost(tourAux, distances, n));
+            } else {
+                results[i] = *bestTourPairCreate(tourAux, INFINITY);
+            }
         }
         double reference = INFINITY;
         for (int i = 0; i < p; i++) {
