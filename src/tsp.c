@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
+
     fp = fopen(argv[1], "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
@@ -223,7 +224,7 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
     return newLb;
 }
 
-priority_queue_t * scatter_to_processes(priority_queue_t *queue, int id, int p) {
+priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
     priority_queue_t* newQueue = queue_create(cmp);
     int counter = 0;
     while (queue -> size != 0) {
@@ -287,7 +288,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         updateBestTourCost++;
     }
 
-    priority_queue_t* individual_queue = scatter_to_processes(equal_queue, id, p);
+    priority_queue_t* individual_queue = scatter(equal_queue, id, p);
 
     updateBestTourCost = 0;
     //Checks individual nodes
