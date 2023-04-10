@@ -400,14 +400,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             //     bestTourCost = costAux;
             //     memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             // }
-            results[i] = bestTourPairCreate(tourAux, recalculatePathCost(tourAux, distances, n));
+            results[i] = *bestTourPairCreate(tourAux, recalculatePathCost(tourAux, distances, n));
         }
         double reference = INFINITY;
         for (int i = 0; i < p; i++) {
-            if (results[i] -> bestTourCost < reference) {
-                reference = results[i] -> bestTourCost;
-                bestTourCost = results[i] -> bestTourCost;
-                memcpy(bestTour, results[i] -> bestTour , (n+1) * sizeof(int));
+            if (results[i].bestTourCost < reference) {
+                reference = results[i].bestTourCost;
+                bestTourCost = results[i].bestTourCost;
+                memcpy(bestTour, results[i].bestTour , (n+1) * sizeof(int));
             }
         }
         free(tour);
