@@ -391,16 +391,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             double costAux;
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
             MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
-            // printf("Solução do %d:", i);
-            // for(int j = 0; j < n + 1; j++) {
-            //     printf("%d ", tourAux[j]);
-            // }
-            printf("\n");
             if (costAux <= bestTourCost || !isATour(bestTour, n)) {
-                // printf("A ALTERAR: %d\n", i);
-                // for(int k = 0; k < n + 1; k++) {
-                //     printf("%d ", tourAux[k]);
-                // }
                 bestTourCost = costAux;
                 memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             }
