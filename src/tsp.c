@@ -375,6 +375,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
     MPI_Barrier(MPI_COMM_WORLD);
     if (id == 0) {
+        printf("Solução do %d:", id);
+        for(int k = 0; k < n + 1; k++) {
+            printf("%d ", tourAux[k]);
+        }
+        printf("\n");
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
