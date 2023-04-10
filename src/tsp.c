@@ -392,6 +392,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             if (tourMatchesCost(tourAux, costAux, distances, n)) {
                 //dar return do 1o,
                 //calcular o actual cost do caminho e ver qual é que da match.
+                printf("Matches.\n");
                 bestTourCost = costAux;
                 memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             }
