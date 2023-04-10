@@ -41,11 +41,9 @@ int main(int argc, char *argv[]) {
     sscanf(strtok(n_edges, " "), "%d", &n);
 
     double** distances = (double **) malloc(sizeof(double) *n);
-    #pragma omp parallel for 
-    {
+    #pragma omp parallel for
         for(int i = 0; i < n; i++)
             distances[i] = (double *)malloc(n * sizeof(double));
-    }
     if(n_edges)
         free(n_edges);
 
