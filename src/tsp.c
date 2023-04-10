@@ -407,7 +407,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         if (solutionCost == 0.0) {
             //didn't find a solution, send dummy
             MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
-            MPI_Send(&__DBL_MAX__, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
+            double doubleMax = __DBL_MAX__;
+            MPI_Send(&doubleMax, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
         } else {
             MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
             MPI_Send(&solutionCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
