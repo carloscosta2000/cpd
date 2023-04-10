@@ -322,7 +322,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     //Checks individual nodes
     while(individual_queue -> size != 0){
         queue_element *node = (queue_element*) queue_pop(individual_queue);
-        printf("IN LOOP2: %lf\n", bestTourCost);
         if (updateBestTourCost % N == 0) {
             MPI_Request request;
             double received_best_tour_cost;
