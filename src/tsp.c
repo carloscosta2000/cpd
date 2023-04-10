@@ -258,7 +258,6 @@ int tourMatchesCost(int * tour, double cost, double** distances, int n) {
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
-    double solutionCost = 0.0;
     int* bestTour = (int*) calloc((n+1), sizeof(int));
     if(lb > bestTourCost){ //caso nao tenha solução
         return bestTourPairCreate(tour, -1.0);
@@ -293,7 +292,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             if(node -> cost + distances[node -> city][0] < bestTourCost){
                 updateTour(bestTour, node->tour, n+1);
                 bestTourCost = node -> cost + distances[node -> city][0];
-                solutionCost = node -> cost + distances[node -> city][0];
             }
         }else{
             if(node -> path_zero == 0){
@@ -353,7 +351,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             if(node -> cost + distances[node -> city][0] < bestTourCost){
                 updateTour(bestTour, node->tour, n+1);
                 bestTourCost = node -> cost + distances[node -> city][0];
-                solutionCost = node -> cost + distances[node -> city][0];
             }
         }else{
             if(node -> path_zero == 0){
