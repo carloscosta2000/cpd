@@ -261,7 +261,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             double received_best_tour_cost;
             MPI_Irecv(&received_best_tour_cost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD, &request);
             printf("Received tour cost: %lf\n", received_best_tour_cost);
-            if (received_best_tour_cost < bestTourCost)
+            if (received_best_tour_cost != 0 && received_best_tour_cost < bestTourCost)
                 bestTourCost = received_best_tour_cost;
         }
         queue_element *node = (queue_element*) queue_pop(equal_queue);
@@ -315,7 +315,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             double received_best_tour_cost;
             MPI_Irecv(&received_best_tour_cost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD, &request);
             printf("Received tour cost: %lf\n", received_best_tour_cost);
-            if (received_best_tour_cost < bestTourCost)
+            if (received_best_tour_cost != 0 && received_best_tour_cost < bestTourCost)
                 bestTourCost = received_best_tour_cost;
         }
         if(node -> lb >= bestTourCost){
