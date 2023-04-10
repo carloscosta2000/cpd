@@ -247,14 +247,12 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 //     return list_queues;
 // }
 
-int isATour(int* tour, int n) {
-    int counter = 0;
-    for(int i = 0; i < n + 1; i++) {
-        if (tour[n] == 0)
-            counter++;
+int tourMatchesCost(int * tour, double cost, double** distances, int n) {
+    double tourCost = 0.0;
+    for (int i = 0, i < n; i++) {
+        tourCost += distances[i][i+1];
     }
-
-    return counter == 2;
+    return tourCost == cost;
 }
 
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter){
@@ -394,7 +392,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             double costAux;
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
             MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
-            if (costAux < bestTourCost || !isATour(bestTour, n)) {
+            if (tourMatchesCost(tourAux, costAux, distances, n)) {
+                //dar return do 1o,
+                //calcular o actual cost do caminho e ver qual é que da match.
                 bestTourCost = costAux;
                 memcpy(bestTour, tourAux, (n+1) * sizeof(int));
             }
