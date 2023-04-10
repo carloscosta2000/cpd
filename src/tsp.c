@@ -24,6 +24,12 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
+    int num_threads = 0;
+    #pragma omp parallel 
+    {
+        num_threads = omp_get_num_threads();
+    }
+
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -35,8 +41,11 @@ int main(int argc, char *argv[]) {
     sscanf(strtok(n_edges, " "), "%d", &n);
 
     double** distances = (double **) malloc(sizeof(double) *n);
-    for(int i = 0; i < n; i++)
-        distances[i] = (double *)malloc(n * sizeof(double));
+    #pragma omp parallel for 
+    {
+        for(int i = 0; i < n; i++)
+            distances[i] = (double *)malloc(n * sizeof(double));
+    }
     if(n_edges)
         free(n_edges);
 
@@ -224,7 +233,7 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
     return newLb;
 }
 
-priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
+priority_queue_t * scatter_to_processes(priority_queue_t *queue, int id, int p) {
     priority_queue_t* newQueue = queue_create(cmp);
     int counter = 0;
     while (queue -> size != 0) {
@@ -288,7 +297,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         updateBestTourCost++;
     }
 
-    priority_queue_t* individual_queue = scatter(equal_queue, id, p);
+    priority_queue_t* individual_queue = scatter_to_processes(equal_queue, id, p);
 
     updateBestTourCost = 0;
     //Checks individual nodes

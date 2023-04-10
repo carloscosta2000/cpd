@@ -46,4 +46,6 @@ void print_matrix(double** distances, int n);
 
 void freeDistances(double **distances, int n);
 
+priority_queue_t * scatter_to_processes(priority_queue_t *queue, int id, int p);
+
 #endif
