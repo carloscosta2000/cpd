@@ -247,7 +247,7 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 //     return list_queues;
 // }
 
-int recalculatePathCost(int * tour, double** distances, int n) {
+double recalculatePathCost(int * tour, double** distances, int n) {
     double tourCost = 0.0;
     for (int i = 0; i < n; i++) {
         tourCost += distances[tour[i]][tour[i+1]];
