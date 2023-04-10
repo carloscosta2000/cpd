@@ -256,13 +256,13 @@ double recalculatePathCost(int * tour, double** distances, int n) {
 }
 
 priority_queue_t ** scatter_to_threads(priority_queue_t * queue) {
-    priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (num_threads));
-    for(int i = 0; i < omp_get_num_threads; i++){
+    priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (omp_get_num_threads()));
+    for(int i = 0; i < omp_get_num_threads(); i++){
         list_queues[i] = queue_create(cmp);
     }
     int counter = 0;
     while(queue -> size != 0) {
-        queue_push(list_queues[counter % omp_get_num_threads], queue_pop(queue));
+        queue_push(list_queues[counter % omp_get_num_threads()], queue_pop(queue));
         counter++;
     }
     return list_queues;
