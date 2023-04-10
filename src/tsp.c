@@ -24,13 +24,6 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
-    int num_threads = 0;
-    #pragma omp parallel 
-    {
-        num_threads = omp_get_num_threads();
-    }
-
-
     fp = fopen(argv[1], "r");
     if (fp == NULL)
         exit(EXIT_FAILURE);
@@ -41,7 +34,6 @@ int main(int argc, char *argv[]) {
     sscanf(strtok(n_edges, " "), "%d", &n);
 
     double** distances = (double **) malloc(sizeof(double) *n);
-    #pragma omp parallel for
     for(int i = 0; i < n; i++)
         distances[i] = (double *)malloc(n * sizeof(double));
     if(n_edges)
