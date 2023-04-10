@@ -247,6 +247,16 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 //     return list_queues;
 // }
 
+int isATour(int* tour, int n) {
+    int counter = 0;
+    for(int i = 0; i < n + 1; i++) {
+        if (tour[n] == 0)
+            counter++;
+    }
+
+    return counter == 2;
+}
+
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
@@ -391,7 +401,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             //     printf("%d ", tourAux[j]);
             // }
             printf("\n");
-            if (costAux < bestTourCost) {
+            if (costAux <= bestTourCost || !isATour(bestTour, n)) {
                 // printf("A ALTERAR: %d\n", i);
                 // for(int k = 0; k < n + 1; k++) {
                 //     printf("%d ", tourAux[k]);
