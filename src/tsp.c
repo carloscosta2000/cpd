@@ -249,7 +249,7 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 
 int tourMatchesCost(int * tour, double cost, double** distances, int n) {
     double tourCost = 0.0;
-    for (int i = 0, i < n; i++) {
+    for (int i = 0; i < n; i++) {
         tourCost += distances[i][i+1];
     }
     return tourCost == cost;
