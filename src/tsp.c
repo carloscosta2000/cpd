@@ -342,11 +342,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     priority_queue_t ** buffers = init_list_queues(omp_get_num_threads);
 
-    priority_queue_t ** queue_list = scatter_to_threads(individual_queue, );
+    priority_queue_t ** queue_list = scatter_to_threads(individual_queue);
 
-    #pragma omp parallel {
+    #pragma omp parallel 
+    {
         updateBestTourCost = 0;
-        individual_queue = queue_list[omp_get_thread_num];
+        individual_queue = queue_list[omp_get_thread_num()];
         //Checks individual nodes
         while(individual_queue -> size != 0){
             queue_element *node = (queue_element*) queue_pop(individual_queue);
