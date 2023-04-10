@@ -289,16 +289,16 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
-        if (updateBestTourCost % (N/10) == 0) {
-            printf("IN IF\n");
-            for (int i = 0; i < p; i++) {
-                if (i != id) {
-                    MPI_Request request;
-                    printf("bestTourCost sent %lf\n", bestTourCost);
-                    MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
-                }
-            }
-        }
+        // if (updateBestTourCost % (N/10) == 0) {
+        //     printf("IN IF\n");
+        //     for (int i = 0; i < p; i++) {
+        //         if (i != id) {
+        //             MPI_Request request;
+        //             printf("bestTourCost sent %lf\n", bestTourCost);
+        //             MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
+        //         }
+        //     }
+        // }
         queue_element_delete(node);
         iteration_counter++;
         updateBestTourCost++;
@@ -343,16 +343,16 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
         }
-        if (updateBestTourCost % (N/10) == 0) {
-            printf("IN IF\n");
-            for (int i = 0; i < p; i++) {
-                if (i != id) {
-                    MPI_Request request;
-                    printf("bestTourCost sent %lf\n", bestTourCost);
-                    MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
-                }
-            }
-        }
+        // if (updateBestTourCost % (N/10) == 0) {
+        //     printf("IN IF\n");
+        //     for (int i = 0; i < p; i++) {
+        //         if (i != id) {
+        //             MPI_Request request;
+        //             printf("bestTourCost sent %lf\n", bestTourCost);
+        //             MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
+        //         }
+        //     }
+        // }
         updateBestTourCost++;
         queue_element_delete(node);
     }
@@ -385,6 +385,13 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     } else {
         MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
         MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
+        for (int i = 0; i < p; i++) {
+            if (i != id) {
+                MPI_Request request;
+                printf("bestTourCost sent %lf\n", bestTourCost);
+                MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
+            }
+        }
     }
     free(tour);
     queue_delete(individual_queue);
