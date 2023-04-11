@@ -361,8 +361,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         //Checks individual nodes
         while(thread_queue -> size > 0){
             //printf("SIZE IN WHILE: %ld\n" , thread_queue -> size);
-
             queue_element *node = (queue_element*) queue_pop(thread_queue);
+            if (node == NULL)
+                printf("TA A NULL\n");
 
 
             //RECEIVE TOUR COST
