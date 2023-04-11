@@ -240,6 +240,7 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 
 //Creates queues
 priority_queue_t ** init_list_queues(int num_threads){
+    printf("NUM_THREADS: %d\n", num_threads);
     priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (num_threads));
     for(int i = 0; i < num_threads; i++){
         list_queues[i] = queue_create(cmp);
@@ -262,7 +263,7 @@ priority_queue_t ** scatter_to_threads(priority_queue_t * queue) {
     }
     int counter = 0;
     printf("NUM THREADS: %d\n", omp_get_num_threads());
-    while(queue -> size != 0) {
+    while(queue -> size >= 0) {
         printf("COUNTER: %d\n", (counter % omp_get_num_threads()));
         queue_push(list_queues[counter % omp_get_num_threads()], queue_pop(queue));
         counter++;
