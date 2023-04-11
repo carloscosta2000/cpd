@@ -349,7 +349,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     #pragma omp parallel 
     {
-        updateBestTourCost = 0;
+        int updateBestTourCostCounter = 0;
         printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
         printf("AFTER ATTR\n");
@@ -359,7 +359,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             queue_element *node = (queue_element*) queue_pop(thread_queue);
 
             //RECEIVE TOUR COST
-            if (updateBestTourCost % (N/8) == 0) {
+            if (updateBestTourCostCounter % (N/8) == 0) {
                 MPI_Request request;
                 double received_best_tour_cost;
                 int flag = 0;
@@ -394,7 +394,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
             //SEND TOUR COST
-            if (updateBestTourCost % (N/8) == 0) {
+            if (updateBestTourCostCounter % (N/8) == 0) {
                 //printf("IN IF\n");
                 for (int i = 0; i < p; i++) {
                     if (i != id) {
@@ -404,7 +404,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     }
                 }
             }
-            updateBestTourCost++;
+            updateBestTourCostCounter++;
             queue_element_delete(node);
         }
     }
