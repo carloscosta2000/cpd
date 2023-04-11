@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     int counter = 0;
     exec_time = -omp_get_wtime();
 
-    bestTourPair *pair = TSPBB(distances, n, bestTourCost, id, p, counter);
+    bestTourPair *pair = TSPBB(distances, n, bestTourCost, id, p, counter, num_threads);
     if (id == 0) {
         exec_time += omp_get_wtime();
         fprintf(stderr, "%.1fs\n", exec_time);
@@ -261,22 +261,21 @@ double recalculatePathCost(int * tour, double** distances, int n) {
     return tourCost;
 }
 
-priority_queue_t ** scatter_to_threads(priority_queue_t * queue) {
-    priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (omp_get_num_threads()));
-    for(int i = 0; i < omp_get_num_threads(); i++){
+priority_queue_t ** scatter_to_threads(priority_queue_t * queue, int num_threads) {
+    priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (num_threads));
+    for(int i = 0; i < num_threads; i++){
         list_queues[i] = queue_create(cmp);
     }
     int counter = 0;
-    //printf("NUM THREADS: %d\n", omp_get_num_threads());
     while(queue -> size > 0) {
-        queue_push(list_queues[counter % omp_get_num_threads()], queue_pop(queue));
+        queue_push(list_queues[counter % num_threads], queue_pop(queue));
         counter++;
     }
     return list_queues;
     
 }
 
-bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter){
+bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter, int num_threads){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
     int* bestTour = (int*) calloc((n+1), sizeof(int));
@@ -344,13 +343,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         iteration_counter++;
         updateBestTourCost++;
     }
+        
+    priority_queue_t* individual_queue = scatter(equal_queue, id, p);
+    priority_queue_t ** buffers = init_list_queues(num_threads);
+    priority_queue_t ** queue_list = scatter_to_threads(individual_queue, num_threads);
 
     #pragma omp parallel 
     {
-        priority_queue_t* individual_queue = scatter(equal_queue, id, p);
 
-        priority_queue_t ** buffers = init_list_queues(omp_get_num_threads());
-        priority_queue_t ** queue_list = scatter_to_threads(individual_queue);
         int updateBestTourCostCounter = 0;
         //printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
