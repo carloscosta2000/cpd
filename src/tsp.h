@@ -30,7 +30,7 @@ void bestTourPairDelete(bestTourPair *btPair);
 bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
 
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
-bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter);
+bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter, int num_threads);
 
 double calculateLB(double ** distances, int n);
 
