@@ -24,6 +24,11 @@ int main(int argc, char *argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &id);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
+    int num_threads = 0;
+    #pragma omp parallel 
+    {
+        num_threads = omp_get_num_threads();
+    }
 
     fp = fopen(argv[1], "r");
     if (fp == NULL)
@@ -340,13 +345,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         updateBestTourCost++;
     }
 
-    priority_queue_t* individual_queue = scatter(equal_queue, id, p);
-    printf("INDIVIDUAL QUEUE SIZE: %ld\n", individual_queue -> size);
-
-    priority_queue_t ** buffers = init_list_queues(omp_get_num_threads());
-    priority_queue_t ** queue_list = scatter_to_threads(individual_queue);
     #pragma omp parallel 
     {
+        priority_queue_t* individual_queue = scatter(equal_queue, id, p);
+
+        priority_queue_t ** buffers = init_list_queues(omp_get_num_threads());
+        priority_queue_t ** queue_list = scatter_to_threads(individual_queue);
         int updateBestTourCostCounter = 0;
         //printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
