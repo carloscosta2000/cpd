@@ -245,7 +245,7 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
 
 //Creates queues
 priority_queue_t ** init_list_queues(int num_threads){
-    printf("NUM_THREADS: %d\n", num_threads);
+    //printf("NUM_THREADS: %d\n", num_threads);
     priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (num_threads));
     for(int i = 0; i < num_threads; i++){
         list_queues[i] = queue_create(cmp);
@@ -354,12 +354,12 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         int updateBestTourCostCounter = 0;
         //printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
-        printf("Thread NUM: %d\n", omp_get_thread_num());
+        //printf("Thread NUM: %d\n", omp_get_thread_num());
         //printf("AFTER ATTR\n");
-        printf("Queue size: %ld\n", thread_queue -> size);
+        //printf("Queue size: %ld\n", thread_queue -> size);
         //Checks individual nodes
         while(thread_queue -> size > 0){
-            printf("SIZE IN WHILE: %ld\n" , thread_queue -> size);
+            //printf("SIZE IN WHILE: %ld\n" , thread_queue -> size);
 
             queue_element *node = (queue_element*) queue_pop(thread_queue);
 
