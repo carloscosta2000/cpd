@@ -383,131 +383,61 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     priority_queue_t ** queue_list = scatter_to_threads(individual_queue, num_threads);
     double bestTourCostProcess = bestTourCost;
 
-     #pragma omp parallel
-    {   
-        int finished = 0;
-        priority_queue_t *queue = queue_list[omp_get_thread_num()];
-        double newLb;
-        int pos = 0;
-        while(finished == 0){
-            queue_element* node = (queue_element*) queue_pop(queue);
-            if (node == NULL) {
-                #pragma omp critical(sizeQueues)
-                if(get_biggest_queue_size(queue_list, queue) == -1)
-                    finished = 1;
-                
-                if(queue -> size > 0)
-                    node = (queue_element*) queue_pop(queue);
-                else{
-                    finished = 1;
-                    continue;
-                }    
-            }
-            int can_remove = 0;
-            #pragma omp critical(bestTourCost)
-            {   //check if the best node in the queue is worst than the bestTourCost
-                //if it is , then all of the queue is too, so it deletes the node and cleans the queue
-                if(node != NULL && node -> lb >= bestTourCost){
-                    can_remove = 1;
-                    #pragma omp critical(sizeQueues)
-                    {
-                        queue_delete(queue);
-                    }
-                }  
-            }
-            if(can_remove == 1){
-                queue_element_delete(node);
-                queue_list[omp_get_thread_num()] = queue_create(cmp);
-                queue = queue_list[omp_get_thread_num()];
-                continue;
-            }
-            //if the tour is complete and the cost is lower than bestTourCost, the bestTour and bestTourCost are updated
-            if(node != NULL && node -> length == n && distances[node -> city][0] != 0){
-                #pragma omp critical(bestTourCost)
-                {   
-                    if(node -> cost + distances[node -> city][0] < bestTourCost){
-                        updateTour(bestTour, node->tour, n+1);
-                        bestTour[n] = 0;
-                        bestTourCost = (node -> cost) + (distances[node -> city][0]);
-                    }
+    #pragma omp parallel 
+    {
+        double bestTourCostThread = bestTourCost;
+        int* bestTourThread = (int*) calloc((n+1), sizeof(int));
+        priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
+        priority_queue_t* writeBuf = buffers[omp_get_thread_num()];
+        priority_queue_t* readBuf = buffers[(omp_get_thread_num() - 1) % num_threads];
+        printf("Thread NUM (e write): %d Reader: %d\n", omp_get_thread_num(), (omp_get_thread_num() - 1) % num_threads);
+
+        int updateBestTourCostThreads = 0;
+        while(thread_queue -> size > 0){
+            queue_element *node = (queue_element*) queue_pop(thread_queue);
+
+            if (updateBestTourCost % (N/8) == 0) {
+                int bufferCounter = 0;
+                while (bufferCounter < 200 && thread_queue -> size > 0) {
+                    queue_push(writeBuf, queue_pop(thread_queue));
+                    counter++;
                 }
-            }else{ //continues to expand this node, checking is neighbours that aren't in the tour
+            }
+
+            if(node -> lb >= bestTourCostThread){
+                break;
+            }
+            if(node -> length == n && distances[node -> city][0] != 0){
+                if(node -> cost + distances[node -> city][0] < bestTourCost){
+                    updateTour(bestTour, node->tour, n+1);
+                    bestTourCost = node -> cost + distances[node -> city][0];
+                }
+            }else{
                 if(node -> path_zero == 0){
-                    queue_element_delete(node);
+                    //queue_element_delete(node);
                     continue;
                 }
-                for(int v = 0; v < n; v++)
+                for(int v = 0; v < n; v++){
                     if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
-                        if(node -> length + 1 != n && (node -> path_zero & ~(1L << v)) == 0){
+                        newLb = calculateNewLB(distances, node, v, n);
+                        if(newLb > bestTourCost)
                             continue;
-                        }else{
-                            newLb = calculateNewLB(distances, node, v, n);
-                            int skip = 0;
-                            #pragma omp critical(bestTourCost)
-                            if(newLb > bestTourCost)
-                                skip = 1;
-                            
-                            if(skip == 1)
-                                continue;
-                            double newCost = distances[node->city][v] + node -> cost;
-                            queue_element * newElement = queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1);
-                            #pragma omp critical(sizeQueues)
-                            queue_push(queue, newElement);
-                            pos = pos+ 1;
-                        }
-                    }     
+                        double newCost = distances[node->city][v] + node -> cost;
+                        queue_push(thread_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
+                    }
                 }
-            if(node != NULL)
-                queue_element_delete(node);
+            }
+            if (updateBestTourCost % (N/8) == 0) {
+                int bufferCounter = 0;
+                while (bufferCounter < 200 && thread_queue -> size > 0) {
+                    queue_push(thread_queue, queue_pop(readBuf));
+                    counter++;
+                }
+            }
+            updateBestTourCostThreads++;
+            //queue_element_delete(node);
         }
     }
-
-    // #pragma omp parallel 
-    // {
-    //     double bestTourCostThread = bestTourCost;
-    //     int* bestTourThread = (int*) calloc((n+1), sizeof(int));
-    //     priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
-    //     int updateBestTourCostThreads = 0;
-    //     while(thread_queue -> size > 0){
-    //         queue_element *node = (queue_element*) queue_pop(thread_queue);
-    //         if (updateBestTourCost % (N/8) == 0) {
-    //             #pragma omp critical (updateThreadBestTour)
-    //             {
-    //                 if (bestTourCostThread > bestTourCostProcess) {
-    //                     bestTourCostThread = bestTourCostProcess;
-    //                 } else {
-    //                     bestTourCostProcess = bestTourCostThread;
-    //                 }
-    //             }
-    //         }
-
-    //         if(node -> lb >= bestTourCostThread){
-    //             break;
-    //         }
-    //         if(node -> length == n && distances[node -> city][0] != 0){
-    //             if(node -> cost + distances[node -> city][0] < bestTourCost){
-    //                 updateTour(bestTour, node->tour, n+1);
-    //                 bestTourCost = node -> cost + distances[node -> city][0];
-    //             }
-    //         }else{
-    //             if(node -> path_zero == 0){
-    //                 //queue_element_delete(node);
-    //                 continue;
-    //             }
-    //             for(int v = 0; v < n; v++){
-    //                 if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
-    //                     newLb = calculateNewLB(distances, node, v, n);
-    //                     if(newLb > bestTourCost)
-    //                         continue;
-    //                     double newCost = distances[node->city][v] + node -> cost;
-    //                     queue_push(thread_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
-    //                 }
-    //             }
-    //         }
-    //         updateBestTourCostThreads++;
-    //         //queue_element_delete(node);
-    //     }
-    // }
     //SEND TOUR COST
     for (int i = 0; i < p; i++) {
         if (i != id) {
