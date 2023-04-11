@@ -275,6 +275,40 @@ priority_queue_t ** scatter_to_threads(priority_queue_t * queue, int num_threads
     
 }
 
+int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *queue){
+    int biggestQueue = -1;
+    int biggestQueueSize = -1;
+    for (int i = 0; i < omp_get_num_threads(); i++) {
+        if (list_queues[i] -> size < __INT_MAX__) 
+            if ((int) list_queues[i] -> size > biggestQueueSize) {
+                biggestQueue = i;
+                biggestQueueSize = (int) list_queues[i] -> size;
+            } 
+    }
+    if(biggestQueueSize < 1){
+        return -1;
+    }else{
+        int releases = 0;
+        switch (biggestQueueSize) {
+            case 0 ... 9999:
+                releases = 0;
+                break;
+            case 10000 ... 999999:
+                releases = biggestQueueSize / 2;
+                break;
+            case 1000000 ... 10000000:
+                releases = biggestQueueSize / 3;
+                break;
+            default:
+                releases = biggestQueueSize / 4;
+                break;
+        }
+        for(int i = 0; i < releases; i++)
+            queue_push(queue, (queue_element*) queue_pop(list_queues[biggestQueue]));
+    }
+    return biggestQueueSize;
+}
+
 bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter, int num_threads){
     int *tour = (int*) calloc((n+1), sizeof(int));
     double lb = calculateLB(distances, n);
