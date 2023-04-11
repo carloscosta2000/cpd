@@ -342,9 +342,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     priority_queue_t ** buffers = init_list_queues(omp_get_num_threads());
 
-    printf("BEFORE SCATTER THREADS\n");
     priority_queue_t ** queue_list = scatter_to_threads(individual_queue);
-    printf("AFTER SCATTER THREADS\n");
 
     #pragma omp parallel 
     {
@@ -352,7 +350,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         individual_queue = queue_list[omp_get_thread_num()];
         //Checks individual nodes
         while(individual_queue -> size != 0){
+            printf("BEFORE POP\n");
             queue_element *node = (queue_element*) queue_pop(individual_queue);
+            printf("AFTER POP\n");
+
             //RECEIVE TOUR COST
             if (updateBestTourCost % (N/8) == 0) {
                 MPI_Request request;
