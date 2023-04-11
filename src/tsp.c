@@ -347,11 +347,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     #pragma omp parallel 
     {
         updateBestTourCost = 0;
-        individual_queue = queue_list[omp_get_thread_num()];
+        priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
         //Checks individual nodes
-        while(individual_queue -> size != 0){
+        while(thread_queue -> size != 0){
             printf("BEFORE POP\n");
-            queue_element *node = (queue_element*) queue_pop(individual_queue);
+            queue_element *node = (queue_element*) queue_pop(thread_queue);
             printf("AFTER POP\n");
 
             //RECEIVE TOUR COST
@@ -385,7 +385,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                         if(newLb > bestTourCost)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
-                        queue_push(individual_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
+                        queue_push(thread_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
                     }
                 }
             }
