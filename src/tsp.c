@@ -389,20 +389,39 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         int* bestTourThread = (int*) calloc((n+1), sizeof(int));
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
         priority_queue_t* writeBuf = buffers[omp_get_thread_num()];
-        priority_queue_t* readBuf = buffers[(omp_get_thread_num() - 1) % num_threads];
-        printf("Thread NUM (e write): %d Reader: %d\n", omp_get_thread_num(), (omp_get_thread_num() - 1 + num_threads) % num_threads);
+        priority_queue_t* readBuf = buffers[(omp_get_thread_num() - 1 + num_threads) % num_threads];
+        //printf("Thread NUM (e write): %d Reader: %d\n", omp_get_thread_num(), (omp_get_thread_num() - 1 + num_threads) % num_threads);
 
         int updateBestTourCostThreads = 0;
-        while(thread_queue -> size > 0){
+        while(thread_queue -> size > 0 || readBuf -> size > 0){
             queue_element *node = (queue_element*) queue_pop(thread_queue);
-
-            if (updateBestTourCost % (N/8) == 0) {
+            //read from buf
+            if (updateBestTourCost % (N/8) == 0 || node == NULL) {
                 int bufferCounter = 0;
-                while (bufferCounter < 200 && thread_queue -> size > 0) {
-                    queue_push(writeBuf, queue_pop(thread_queue));
-                    counter++;
+                while (bufferCounter < 200 && readBuf -> size > 0) {
+                    queue_element *nodeRead;
+                    #pragma omp critical
+                    {
+                        nodeRead = (queue_element*) queue_pop(readBuf);
+                    }
+                    queue_push(thread_queue, nodeRead);
+                    bufferCounter++;
                 }
             }
+            //write to buf
+            if (updateBestTourCost % (N/8) == 0) {
+                int bufferCounter = 0;
+                while (bufferCounter < 200 && thread_queue -> size > 500) {
+                    queue_element *nodeWrite;
+                    #pragma omp critical
+                    {
+                        nodeWrite = (queue_element*) queue_pop(thread_queue);
+                    }
+                    queue_push(writeBuf, nodeWrite);
+                    bufferCounter++;
+                }
+            }
+
 
             if(node -> lb >= bestTourCostThread){
                 break;
@@ -427,13 +446,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     }
                 }
             }
-            if (updateBestTourCost % (N/8) == 0) {
-                int bufferCounter = 0;
-                while (bufferCounter < 200 && thread_queue -> size > 0) {
-                    queue_push(thread_queue, queue_pop(readBuf));
-                    counter++;
-                }
-            }
+            
             updateBestTourCostThreads++;
             //queue_element_delete(node);
         }
