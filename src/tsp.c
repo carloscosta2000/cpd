@@ -352,7 +352,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
      #pragma omp parallel
     {   
         int finished = 0;
-        priority_queue_t *queue = list_queues[omp_get_thread_num()];
+        priority_queue_t *queue = queue_list[omp_get_thread_num()];
         double newLb;
         int pos = 0;
         while(finished == 0){
