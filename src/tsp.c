@@ -264,7 +264,6 @@ priority_queue_t ** scatter_to_threads(priority_queue_t * queue) {
     int counter = 0;
     //printf("NUM THREADS: %d\n", omp_get_num_threads());
     while(queue -> size > 0) {
-        printf("SIZE IN WHILE: %ld\n" , queue -> size);
         queue_push(list_queues[counter % omp_get_num_threads()], queue_pop(queue));
         counter++;
     }
@@ -342,23 +341,23 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
 
     priority_queue_t* individual_queue = scatter(equal_queue, id, p);
-    printf("AFTER SCATTER\n");
     printf("INDIVIDUAL QUEUE SIZE: %ld\n", individual_queue -> size);
 
     priority_queue_t ** buffers = init_list_queues(omp_get_num_threads());
-    printf("AFTER Buffers\n");
     priority_queue_t ** queue_list = scatter_to_threads(individual_queue);
-    printf("AFTER QUEUE_LIST\n");
     #pragma omp parallel 
     {
         int updateBestTourCostCounter = 0;
         //printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
         //printf("AFTER ATTR\n");
-        //printf("Queue size: %ld\n", thread_queue -> size);
+        printf("Queue size: %ld\n", thread_queue -> size);
         //Checks individual nodes
-        while(thread_queue -> size != 0){
+        while(thread_queue -> size > 0){
+            printf("SIZE IN WHILE: %ld\n" , thread_queue -> size);
+
             queue_element *node = (queue_element*) queue_pop(thread_queue);
+
 
             //RECEIVE TOUR COST
             if (updateBestTourCostCounter % (N/8) == 0) {
