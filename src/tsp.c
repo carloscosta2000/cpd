@@ -395,6 +395,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         int updateBestTourCostThreads = 0;
         while(thread_queue -> size > 0 || readBuf -> size > 0){
             queue_element *node = (queue_element*) queue_pop(thread_queue);
+            if (node == NULL) 
+                printf("YURRRRRRRRRRRRR");
             //read from buf
             if (updateBestTourCost % (N/8) == 0 || node == NULL) {
                 int bufferCounter = 0;
@@ -405,6 +407,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                         nodeRead = (queue_element*) queue_pop(readBuf);
                     }
                     queue_push(thread_queue, nodeRead);
+
                     bufferCounter++;
                 }
             }
