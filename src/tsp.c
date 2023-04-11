@@ -264,7 +264,6 @@ priority_queue_t ** scatter_to_threads(priority_queue_t * queue) {
     int counter = 0;
     printf("NUM THREADS: %d\n", omp_get_num_threads());
     while(queue -> size >= 0) {
-        printf("COUNTER: %d\n", (counter % omp_get_num_threads()));
         queue_push(list_queues[counter % omp_get_num_threads()], queue_pop(queue));
         counter++;
     }
@@ -352,7 +351,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     {
         updateBestTourCost = 0;
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
-        printf("Queue size: %d\n", thread_queue -> size);
+        printf("Queue size: %ld\n", thread_queue -> size);
         //Checks individual nodes
         while(thread_queue -> size != 0){
             printf("BEFORE POP\n");
