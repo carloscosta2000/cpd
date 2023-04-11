@@ -46,6 +46,8 @@ void print_matrix(double** distances, int n);
 
 void freeDistances(double **distances, int n);
 
+int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *queue);
+
 //priority_queue_t * scatter(priority_queue_t *queue, int id, int p);
 
 #endif
