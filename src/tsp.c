@@ -263,7 +263,7 @@ priority_queue_t ** scatter_to_threads(priority_queue_t * queue) {
     }
     int counter = 0;
     //printf("NUM THREADS: %d\n", omp_get_num_threads());
-    while(queue -> size >= 0) {
+    while(queue -> size > 0) {
         printf("SIZE IN WHILE: %ld\n" , queue -> size);
         queue_push(list_queues[counter % omp_get_num_threads()], queue_pop(queue));
         counter++;
