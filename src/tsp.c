@@ -337,6 +337,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         iteration_counter++;
         updateBestTourCost++;
     }
+    printf("BEFORE SCATTER\n");
 
     priority_queue_t* individual_queue = scatter(equal_queue, id, p);
 
