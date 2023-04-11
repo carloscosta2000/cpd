@@ -350,6 +350,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         int updateBestTourCostCounter = 0;
         //printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
+        printf("Thread NUM: %ld\n", omp_get_thread_num());
         //printf("AFTER ATTR\n");
         printf("Queue size: %ld\n", thread_queue -> size);
         //Checks individual nodes
