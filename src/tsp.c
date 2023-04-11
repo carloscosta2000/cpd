@@ -347,38 +347,30 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     priority_queue_t* individual_queue = scatter(equal_queue, id, p);
     priority_queue_t ** buffers = init_list_queues(num_threads);
     priority_queue_t ** queue_list = scatter_to_threads(individual_queue, num_threads);
-    printf("TOU AQUI\n");
+    double bestTourCostProcess = bestTourCost;
+    int* bestTourProcess = (int*) calloc((n+1), sizeof(int));
 
     #pragma omp parallel 
     {
-
+        double bestTourCostThread = bestTourCost;
+        int* bestTourThread = (int*) calloc((n+1), sizeof(int));
         int updateBestTourCostCounter = 0;
-        //printf("BEFORE ATTR\n");
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
-        //printf("Thread NUM: %d\n", omp_get_thread_num());
-        //printf("AFTER ATTR\n");
-        //printf("Queue size: %ld\n", thread_queue -> size);
-        //Checks individual nodes
+        int updateBestTourCostThreads = 0;
         while(thread_queue -> size > 0){
-            //printf("SIZE IN WHILE: %ld\n" , thread_queue -> size);
             queue_element *node = (queue_element*) queue_pop(thread_queue);
-            if (node == NULL)
-                printf("TA A NULL\n");
+            if (updateBestTourCost % (N/8) == 0) {
+                #pragma omp critical updateThreadBestTour
+                {
+                    if (bestTourCostThread > bestTourCostProcess) {
+                        bestTourCostThread = bestTourCostProcess;
+                    } else {
+                        bestTourCostProcess = bestTourCostThread;
+                    }
+                }
+            }
 
-
-            //RECEIVE TOUR COST
-            // if (updateBestTourCostCounter % (N/8) == 0) {
-            //     MPI_Request request;
-            //     double received_best_tour_cost;
-            //     int flag = 0;
-            //     MPI_Irecv(&received_best_tour_cost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD, &request);
-            //     MPI_Test(&request, &flag, NULL);
-            //     if (flag && received_best_tour_cost != 0.0 && received_best_tour_cost < bestTourCost) {
-            //         //printf("Received tour cost2: %lf\n", received_best_tour_cost);
-            //         bestTourCost = received_best_tour_cost;
-            //     }
-            // }
-            if(node -> lb >= bestTourCost){
+            if(node -> lb >= bestTourCostThread){
                 break;
             }
             if(node -> length == n && distances[node -> city][0] != 0){
@@ -401,19 +393,19 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     }
                 }
             }
-            //SEND TOUR COST
-            // if (updateBestTourCostCounter % (N/8) == 0) {
-            //     //printf("IN IF\n");
-            //     for (int i = 0; i < p; i++) {
-            //         if (i != id) {
-            //             MPI_Request request;
-            //             //printf("%d bestTourCost sent %lf\n", id, bestTourCost);
-            //             MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
-            //         }
-            //     }
-            // }
-            updateBestTourCostCounter++;
+            updateBestTourCostThreads++;
             //queue_element_delete(node);
+        }
+    }
+    //SEND TOUR COST
+    if (updateBestTourCostCounter % (N/8) == 0) {
+        //printf("IN IF\n");
+        for (int i = 0; i < p; i++) {
+            if (i != id) {
+                MPI_Request request;
+                //printf("%d bestTourCost sent %lf\n", id, bestTourCost);
+                MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
+            }
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
