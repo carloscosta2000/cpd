@@ -347,6 +347,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     priority_queue_t* individual_queue = scatter(equal_queue, id, p);
     priority_queue_t ** buffers = init_list_queues(num_threads);
     priority_queue_t ** queue_list = scatter_to_threads(individual_queue, num_threads);
+    printf("TOU AQUI\n");
 
     #pragma omp parallel 
     {
