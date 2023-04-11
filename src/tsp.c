@@ -388,7 +388,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }else{
                 if(node -> path_zero == 0){
-                    queue_element_delete(node);
+                    //queue_element_delete(node);
                     continue;
                 }
                 for(int v = 0; v < n; v++){
@@ -413,7 +413,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 }
             }
             updateBestTourCostCounter++;
-            queue_element_delete(node);
+            //queue_element_delete(node);
         }
     }
     MPI_Barrier(MPI_COMM_WORLD);
