@@ -427,7 +427,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
             //printf("BEFORE\n");
             if(node -> lb >= bestTourCostThread){
-                break;
+                queue_element_delete(node);
+                queue_delete(thread_queue);
+                thread_queue = queue_create(cmp);
+                continue;
             }
             if(node -> length == n && distances[node -> city][0] != 0){
                 if(node -> cost + distances[node -> city][0] < bestTourCost){
