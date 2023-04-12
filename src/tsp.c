@@ -426,6 +426,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             }
 
             //printf("BEFORE\n");
+            //TODO LIMPAR QUEUE
             if(node -> lb >= bestTourCostThread){
                 queue_element_delete(node);
                 queue_delete(thread_queue);
