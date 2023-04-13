@@ -271,7 +271,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     int iteration_counter = 0;
     int updateBestTourCost = 0;
     //fill queue up
-    while(iteration_counter < p * N && equal_queue  -> size >= 0) {
+    while(iteration_counter < 80000 && equal_queue  -> size >= 0) {
         //RECIEVE TOUR COST
         if (updateBestTourCost % (N/8) == 0) {
             MPI_Request request;
@@ -385,7 +385,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
 
         for (int i = 1; i < p; i++) {
-            printf("Tries to send to 0\n");
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
