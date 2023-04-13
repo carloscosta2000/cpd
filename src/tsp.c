@@ -365,7 +365,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
         //SEND TOUR COST
         if (updateBestTourCost % (N/8) == 0) {
-            //printf("IN IF\n");
             for (int i = 0; i < p; i++) {
                 if (i != id) {
                     MPI_Request request;
