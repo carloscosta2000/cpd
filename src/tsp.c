@@ -343,9 +343,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     //Checks individual nodes
     #pragma omp parallel 
     {
-        individual_queue = scatter_to_threads(individual_queue, omp_get_thread_num());
-        while(individual_queue -> size != 0){
-            queue_element *node = (queue_element*) queue_pop(individual_queue);
+        priority_queue_t * new_individual_queue = scatter_to_threads(individual_queue, omp_get_thread_num());
+        while(new_individual_queue -> size != 0){
+            queue_element *node = (queue_element*) queue_pop(new_individual_queue);
             //RECIEVE TOUR COST
             if (updateBestTourCost % (N/8) == 0) {
                 MPI_Request request;
@@ -376,7 +376,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                         if(newLb > bestTourCost)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
-                        queue_push(individual_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
+                        queue_push(new_individual_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
                     }
                 }
             }
