@@ -396,10 +396,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         while(thread_queue -> size > 0 || readBuf -> size > 0){
             queue_element *node = (queue_element*) queue_pop(thread_queue);
             if (node == NULL) 
-                printf("YURRRRRRRRRRRRR");
+                //printf("YURRRRRRRRRRRRR");
             //read from buf
             if (updateBestTourCost % (N/8) == 0 || node == NULL) {
-                printf("ENT YA TASSBEM1\n");
+                //printf("ENT YA TASSBEM1\n");
                 int bufferCounter = 0;
                 while (bufferCounter < 200 && readBuf -> size > 0) {
                     queue_element *nodeRead;
@@ -411,25 +411,23 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
                     bufferCounter++;
                 }
-                printf("ENT YA TASSBEM2\n");
+                //printf("ENT YA TASSBEM2\n");
             }
             //write to buf
             if (updateBestTourCost % (N/8) == 0) {
-                printf("2o ENT YA TASSBEM1\n");
+                //printf("2o ENT YA TASSBEM1\n");
                 int bufferCounter = 0;
                 while (bufferCounter < 200 && thread_queue -> size > 500) {
                     queue_element *nodeWrite;
                     #pragma omp critical
                     {
-                        printf("POP1\n");
                         nodeWrite = (queue_element*) queue_pop(thread_queue);
-                        printf("POP2\n");
                         queue_push(writeBuf, nodeWrite);
 
                     }
                     bufferCounter++;
                 }
-                printf("2o ENT YA TASSBEM2\n");
+                //printf("2o ENT YA TASSBEM2\n");
 
             }
 
@@ -444,8 +442,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             }
             if(node -> length == n && distances[node -> city][0] != 0){
                 if(node -> cost + distances[node -> city][0] < bestTourCost){
-                    updateTour(bestTour, node->tour, n+1);
-                    bestTourCost = node -> cost + distances[node -> city][0];
+                    #pragma omp critical
+                    updateTour(bestTourThread, node->tour, n+1);
+                    bestTourCostThread = node -> cost + distances[node -> city][0];
                 }
             }else{
                 if(node -> path_zero == 0){
@@ -455,7 +454,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 for(int v = 0; v < n; v++){
                     if(distances[node->city][v] != 0 && checkInTour(node->in_tour, v) == 0){
                         newLb = calculateNewLB(distances, node, v, n);
-                        if(newLb > bestTourCost)
+                        if(newLb > bestTourCostThread)
                             continue;
                         double newCost = distances[node->city][v] + node -> cost;
                         queue_push(thread_queue, queueElementCreate(node->tour, newCost, newLb, node->length+1, v, node -> path_zero, node->in_tour, n+1));
