@@ -238,9 +238,9 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
     return newQueue;
 }
 
-priority_queue_t * scatter(priority_queue_t *queue, int thread_num) {
+priority_queue_t * scatter_to_threads(priority_queue_t *queue, int thread_num) {
     priority_queue_t* new_queue = queue_create(cmp);
-    ĩnt counter = 0;
+    int counter = 0;
     while(queue -> size > 0) {
         if(counter % omp_get_num_threads()) {
             queue_push(new_queue, queue_pop(queue));
@@ -249,7 +249,7 @@ priority_queue_t * scatter(priority_queue_t *queue, int thread_num) {
         }
         counter++;
     }
-
+    return new_queue;
 }
 
 //Creates queues
