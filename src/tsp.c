@@ -399,6 +399,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                 printf("YURRRRRRRRRRRRR");
             //read from buf
             if (updateBestTourCost % (N/8) == 0 || node == NULL) {
+                printf("ENT YA TASSBEM1");
                 int bufferCounter = 0;
                 while (bufferCounter < 200 && readBuf -> size > 0) {
                     queue_element *nodeRead;
@@ -410,9 +411,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
                     bufferCounter++;
                 }
+                printf("ENT YA TASSBEM2");
             }
             //write to buf
             if (updateBestTourCost % (N/8) == 0) {
+                printf("2o ENT YA TASSBEM1");
                 int bufferCounter = 0;
                 while (bufferCounter < 200 && thread_queue -> size > 500) {
                     queue_element *nodeWrite;
@@ -423,9 +426,11 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     queue_push(writeBuf, nodeWrite);
                     bufferCounter++;
                 }
+                printf("2o ENT YA TASSBEM2");
+
             }
 
-            printf("BEFORE\n");
+            //printf("BEFORE\n");
             //TODO LIMPAR QUEUE
             if(node -> lb >= bestTourCostThread){
                 queue_element_delete(node);
@@ -454,7 +459,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     }
                 }
             }
-            printf("AFTER\n");
+            //printf("AFTER\n");
             updateBestTourCostThreads++;
             //queue_element_delete(node);
         }
