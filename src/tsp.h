@@ -30,7 +30,7 @@ void bestTourPairDelete(bestTourPair *btPair);
 bestTourPair *bestTourPairCreate(int *bestTour, double bestTourCost);
 
 //returns pair with the tour path(starting at 0 and ending at 0) and the Cost
-bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter, int num_threads);
+bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, int p, int counter);
 
 double calculateLB(double ** distances, int n);
 
@@ -45,8 +45,6 @@ double calculateNewLB(double(** distances),queue_element* city_from, int city_to
 void print_matrix(double** distances, int n);
 
 void freeDistances(double **distances, int n);
-
-int get_biggest_queue_size(priority_queue_t ** list_queues, priority_queue_t *queue);
 
 //priority_queue_t * scatter(priority_queue_t *queue, int id, int p);
 
