@@ -238,15 +238,6 @@ priority_queue_t * scatter(priority_queue_t *queue, int id, int p) {
     return newQueue;
 }
 
-//Creates queues
-// priority_queue_t ** init_list_queues(int num_threads){
-//     priority_queue_t ** list_queues = (priority_queue_t**) malloc(sizeof(priority_queue_t) * (num_threads));
-//     for(int i = 0; i < num_threads; i++){
-//         list_queues[i] = queue_create(cmp);
-//     }
-//     return list_queues;
-// }
-
 double recalculatePathCost(int * tour, double** distances, int n) {
     double tourCost = 0.0;
     for (int i = 0; i < n; i++) {
@@ -270,9 +261,14 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     int iteration_counter = 0;
     int updateBestTourCost = 0;
+    int max_serial = 0;
+    if(p <= 8) {
+        max_serial = 75000;
+    } else {
+        max_serial = 45000;
+    }
     //fill queue up
-    while(iteration_counter < 50000 && equal_queue -> size >= 0) {
-        printf("Queue size: %d\n" , equal_queue -> size);
+    while(iteration_counter < max_serial && equal_queue -> size >= 0) {
         //RECIEVE TOUR COST
         if (updateBestTourCost % (N/8) == 0) {
             MPI_Request request;
@@ -323,8 +319,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     }
 
     priority_queue_t* individual_queue = scatter(equal_queue, id, p);
-
-    //priority_queue_t ** buffers = init_list_queues(omp_get_num_threads);
 
     updateBestTourCost = 0;
     //Checks individual nodes
