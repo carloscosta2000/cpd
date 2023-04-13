@@ -385,6 +385,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
 
         for (int i = 1; i < p; i++) {
+            printf("Tries to send to 0\n");
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
