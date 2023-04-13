@@ -271,7 +271,8 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
     int iteration_counter = 0;
     int updateBestTourCost = 0;
     //fill queue up
-    while(iteration_counter < 20000 && equal_queue  -> size >= 0) {
+    while(iteration_counter < 50000 && equal_queue -> size >= 0) {
+        printf("Queue size: %d\n" , equal_queue -> size);
         //RECIEVE TOUR COST
         if (updateBestTourCost % (N/8) == 0) {
             MPI_Request request;
