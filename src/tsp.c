@@ -421,7 +421,10 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
                     queue_element *nodeWrite;
                     #pragma omp critical
                     {
+                        printf("POP1\n");
                         nodeWrite = (queue_element*) queue_pop(thread_queue);
+                        printf("POP2\n");
+
                     }
                     queue_push(writeBuf, nodeWrite);
                     bufferCounter++;
