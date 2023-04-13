@@ -280,7 +280,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             MPI_Irecv(&received_best_tour_cost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD, &request);
             MPI_Test(&request, &flag, NULL);
             if (flag && received_best_tour_cost != 0.0 && received_best_tour_cost < bestTourCost) {
-                //printf("Received tour cost1: %lf\n", received_best_tour_cost);
                 bestTourCost = received_best_tour_cost;
             }
         }
@@ -310,11 +309,9 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         }
         //SEND TOUR COST
         if (updateBestTourCost % (N/8) == 0) {
-            //printf("IN IF\n");
             for (int i = 0; i < p; i++) {
                 if (i != id) {
                     MPI_Request request;
-                    //printf("%d bestTourCost sent %lf\n", id, bestTourCost);
                     MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
                 }
             }
@@ -340,7 +337,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             MPI_Irecv(&received_best_tour_cost, 1, MPI_DOUBLE, MPI_ANY_SOURCE, TAG_BTC, MPI_COMM_WORLD, &request);
             MPI_Test(&request, &flag, NULL);
             if (flag && received_best_tour_cost != 0.0 && received_best_tour_cost < bestTourCost) {
-                //printf("Received tour cost2: %lf\n", received_best_tour_cost);
                 bestTourCost = received_best_tour_cost;
             }
         }
@@ -373,7 +369,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
             for (int i = 0; i < p; i++) {
                 if (i != id) {
                     MPI_Request request;
-                    //printf("%d bestTourCost sent %lf\n", id, bestTourCost);
                     MPI_Isend(&bestTourCost, 1, MPI_DOUBLE, i, TAG_BTC, MPI_COMM_WORLD, &request);
                 }
             }
@@ -393,18 +388,7 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         for (int i = 1; i < p; i++) {
             MPI_Status status;
             int* tourAux = malloc((n+1) * sizeof(int));
-            //double costAux;
             MPI_Recv(tourAux, n + 1, MPI_INT, i, TAG, MPI_COMM_WORLD, &status);
-            //MPI_Recv(&costAux, 1, MPI_DOUBLE, i, TAG, MPI_COMM_WORLD, &status);
-            // if (tourMatchesCost(tourAux, costAux, distances, n)) {
-            //     //dar return do 1o,
-            //     //calcular o actual cost do caminho e ver qual é que da match.
-            //     //pode tar mal porque se temos uma tour igual a outra
-            //     //ver se é tour e recalcular o cost
-            //     printf("Matches.\n");
-            //     bestTourCost = costAux;
-            //     memcpy(bestTour, tourAux, (n+1) * sizeof(int));
-            // }
             if (recalculatePathCost(tourAux, distances, n) != 0) {
                 results[i] = *bestTourPairCreate(tourAux, recalculatePathCost(tourAux, distances, n));
             } else {
@@ -425,7 +409,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         return bestTourPairCreate(bestTour, bestTourCost);
     } else {
         MPI_Send(bestTour, n + 1, MPI_INT, 0, TAG, MPI_COMM_WORLD);
-        //MPI_Send(&bestTourCost, 1, MPI_DOUBLE, 0, TAG, MPI_COMM_WORLD);
     }
     free(tour);
     queue_delete(individual_queue);
