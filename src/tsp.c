@@ -390,7 +390,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
         priority_queue_t* thread_queue = queue_list[omp_get_thread_num()];
         priority_queue_t* writeBuf = buffers[omp_get_thread_num()];
         priority_queue_t* readBuf = buffers[(omp_get_thread_num() - 1 + num_threads) % num_threads];
-        //printf("Thread NUM (e write): %d Reader: %d\n", omp_get_thread_num(), (omp_get_thread_num() - 1 + num_threads) % num_threads);
 
         int updateBestTourCostThreads = 0;
         while(thread_queue -> size > 0 || readBuf -> size > 0){
