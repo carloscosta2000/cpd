@@ -261,7 +261,6 @@ bestTourPair *TSPBB(double(** distances), int n, double bestTourCost, int id, in
 
     int iteration_counter = 0;
     int updateBestTourCost = 0;
-    int max_serial = 0;
     //fill queue up
     while(iteration_counter < 45000 && equal_queue -> size >= 0) {
         //RECIEVE TOUR COST
