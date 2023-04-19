@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
         printf("%d ", b[asd]);
     }
     printf("\n");*/
+    MPI_Barrier(MPI_COMM_WORLD);
     MPI_Alltoall(b, N, MPI_INT, a, N, MPI_INT, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     sleep(5);
@@ -81,6 +82,7 @@ int main(int argc, char *argv[]) {
             printf("b: %d* ", b[asd]);
         }
     }
+
     printf("\n");
     MPI_Finalize();
 }
