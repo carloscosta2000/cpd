@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     for (int asd = 0; asd < N; asd++) {
         printf("%d ", b[asd]);
     }
-    printf("\n");*/
+    printf("\n");
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Alltoall(&b, N, MPI_INT, a, N, MPI_INT, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
