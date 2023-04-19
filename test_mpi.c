@@ -31,6 +31,9 @@ int main(int argc, char *argv[]) {
     printf("\n");*/
 
     MPI_Bcast(a, N, MPI_INT, 0, MPI_COMM_WORLD);
+    for (int i = 0; i < N; i++)
+        b[i] = a[i] + rank;
+    
     /*
     printf("Before line 6\n");
     printf("A\n");
@@ -44,8 +47,7 @@ int main(int argc, char *argv[]) {
         printf("%d ", b[asd]);
     }
     printf("\n");
-    for (int i = 0; i < N; i++)
-        b[i] = a[i] + rank;
+    
 
     printf("Before line 8\n");
     printf("A\n");
