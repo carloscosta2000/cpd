@@ -1,6 +1,7 @@
 #include <omp.h>
 #include <mpi.h>
 #include <stdio.h>
+#include<unistd.h>
 #define TAG 123
 #define TAG_BTC 111
 #define N 6
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
     MPI_Alltoall(b, N, MPI_INT, a, N, MPI_INT, MPI_COMM_WORLD);
+    sleep(5);
     printf("After line 8\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
