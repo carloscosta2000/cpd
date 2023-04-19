@@ -1,60 +1,71 @@
 #include <omp.h>
 #include <mpi.h>
+#include <stdio.h>
 #define TAG 123
 #define TAG_BTC 111
 #define N 6
 int main(int argc, char *argv[]) {
 
     int rank, p;
-    int[N] a;
-    int[N] b;
+    int a[N];
+    int b[N];
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
     if (rank == 0)
-         for (i = 0; i < N; i++)
+         for (int i = 0; i < N; i++)
             a[i] = i;
 
     printf("Before line 5\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", a[i]);
+        printf("%d ", a[asd]);
     }
+    printf("\n");
     printf("b\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", b[i]);
+        printf("%d ", b[asd]);
     }
+    printf("\n");
+
     MPI_Bcast(a, N, MPI_INT, 0, MPI_COMM_WORLD);
     printf("Before line 6\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", a[i]);
+        printf("%d ", a[asd]);
     }
+    printf("\n");
     printf("b\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", b[i]);
+        printf("%d ", b[asd]);
     }
-    for (i = 0; i < N; i++)
+    printf("\n");
+    for (int i = 0; i < N; i++)
         b[i] = a[i] + rank;
 
     printf("Before line 8\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", a[i]);
+        printf("%d ", a[asd]);
     }
+    printf("\n");
     printf("b\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", b[i]);
+        printf("%d ", b[asd]);
     }
+    printf("\n");
     MPI_Alltoall(b, N, MPI_INT, a, N, MPI_INT, MPI_COMM_WORLD);
     printf("After line 8\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", a[i]);
+        printf("%d", a[asd]);
     }
+    printf("\n");
     printf("b\n");
     for (int asd = 0; asd < N; asd++) {
-        printf("%d", b[i]);
+        printf("%d", b[asd]);
     }
+    printf("\n");
+    MPI_Finalize();
 }
