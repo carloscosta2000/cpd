@@ -31,12 +31,13 @@ int main(int argc, char *argv[]) {
     printf("\n");*/
 
     MPI_Bcast(a, N, MPI_INT, 0, MPI_COMM_WORLD);
+    /*
     printf("Before line 6\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
         printf("%d ", a[asd]);
     }
-    /*
+
     printf("\n");
     printf("b\n");
     for (int asd = 0; asd < N; asd++) {
