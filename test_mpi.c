@@ -17,9 +17,7 @@ int main(int argc, char *argv[]) {
     if (rank == 0) {
          for (int i = 0; i < N; i++) {
             a[i] = i;
-
          }
-
     }
 
     printf("Before line 5\n");
@@ -49,12 +47,8 @@ int main(int argc, char *argv[]) {
     printf("\n");
     for (int i = 0; i < N; i++) {
         b[i] = a[i] + rank;
-
     }
     
-    
-    
-
     printf("Before line 8\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
@@ -67,7 +61,10 @@ int main(int argc, char *argv[]) {
     }
     printf("\n");
     MPI_Barrier(MPI_COMM_WORLD);
-    MPI_Alltoall(&b, N, MPI_INT, a, N, MPI_INT, MPI_COMM_WORLD);
+    //for(int x = 0; x < N; x++) {
+    //    MPI_Scatter(&b, N, MPI_INT, &a)
+    //}
+    MPI_Alltoall(&b, N, MPI_INT, &a, N, MPI_INT, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
     //sleep(5);
     if (rank == 0) {
