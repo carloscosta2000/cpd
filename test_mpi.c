@@ -14,11 +14,15 @@ int main(int argc, char *argv[]) {
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
-    if (rank == 0)
-         for (int i = 0; i < N; i++)
+    if (rank == 0) {
+         for (int i = 0; i < N; i++) {
             a[i] = i;
 
-    /*printf("Before line 5\n");
+         }
+
+    }
+
+    printf("Before line 5\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
         printf("%d ", a[asd]);
@@ -28,13 +32,9 @@ int main(int argc, char *argv[]) {
     for (int asd = 0; asd < N; asd++) {
         printf("%d ", b[asd]);
     }
-    printf("\n");*/
+    printf("\n");
 
     MPI_Bcast(a, N, MPI_INT, 0, MPI_COMM_WORLD);
-    for (int i = 0; i < N; i++)
-        b[i] = a[i] + rank;
-    
-    /*
     printf("Before line 6\n");
     printf("A\n");
     for (int asd = 0; asd < N; asd++) {
@@ -47,6 +47,12 @@ int main(int argc, char *argv[]) {
         printf("%d ", b[asd]);
     }
     printf("\n");
+    for (int i = 0; i < N; i++) {
+        b[i] = a[i] + rank;
+
+    }
+    
+    
     
 
     printf("Before line 8\n");
@@ -63,7 +69,7 @@ int main(int argc, char *argv[]) {
     MPI_Barrier(MPI_COMM_WORLD);
     MPI_Alltoall(&b, N, MPI_INT, a, N, MPI_INT, MPI_COMM_WORLD);
     MPI_Barrier(MPI_COMM_WORLD);
-    sleep(5);
+    //sleep(5);
     if (rank == 0) {
         printf("After line 8\n");
         for (int asd = 0; asd < N; asd++) {
