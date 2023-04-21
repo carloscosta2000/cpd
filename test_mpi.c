@@ -151,6 +151,9 @@ int main(int argc, char* argv[])
         MPI_Bcast(&value, 1, MPI_INT, 0, new_communicator);
         printf("Process %d took part to the new communicator broadcast.\n", my_rank);
     }
+
+    MPI_Bcast(&value, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    printf("Process %d took part to the global communicator broadcast.\n", my_rank);
  
     MPI_Finalize();
  
